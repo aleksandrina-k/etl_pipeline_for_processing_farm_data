@@ -12,3 +12,4 @@ build/
 
 __pycache__/
 _pycache_/
+spark-warehouse
