@@ -55,8 +55,8 @@ def create_dim_table(
             F.lead(orderby_col, default=max_datetime).over(farm_window),
         )
         .withColumnRenamed("time", "startTime")
-        .withColumn("durationS",
-            F.col("endTime").cast("long") - F.col("startTime").cast("long")
+        .withColumn(
+            "durationS", F.col("endTime").cast("long") - F.col("startTime").cast("long")
         )
         .drop("dataCondensed", "changed")
     )
@@ -159,10 +159,10 @@ def split_carryover_items_factory(
 
 
 def merge_table(
-        spark: SparkSession,
-        df: DataFrame,
-        table_location: str,
-        match_columns: Set[str],
+    spark: SparkSession,
+    df: DataFrame,
+    table_location: str,
+    match_columns: Set[str],
 ):
     """
     Merge data into target table removing duplicates.
@@ -187,18 +187,18 @@ def merge_table(
     # table = spark.read.load(table_name)
     (
         table.alias("t_current")
-            .merge(df.dropDuplicates(list(match_columns)).alias("new_df"), on_condition)
-            .whenNotMatchedInsertAll()
-            .whenMatchedUpdateAll()
-            .execute()
+        .merge(df.dropDuplicates(list(match_columns)).alias("new_df"), on_condition)
+        .whenNotMatchedInsertAll()
+        .whenMatchedUpdateAll()
+        .execute()
     )
 
 
 def perform_transformation(
-        spark: SparkSession,
-        mapping: TransMapping,
-        input_dir_location: str,
-        result_dir_location: str
+    spark: SparkSession,
+    mapping: TransMapping,
+    input_dir_location: str,
+    result_dir_location: str,
 ):
     for conf in mapping.transformations_in_order():
         transform: TransConf = conf
@@ -206,7 +206,7 @@ def perform_transformation(
             conf.perform_transformation(
                 spark=spark,
                 input_dir_name=input_dir_location,
-                result_dir_location=result_dir_location
+                result_dir_location=result_dir_location,
             )
             if conf.zorder_columns:
                 conf.optimize_result_table(spark, result_dir_location)

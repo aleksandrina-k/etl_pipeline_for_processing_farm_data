@@ -4,12 +4,12 @@ from orchestration.trans_mapping import TransMapping
 from schemas.gold import (
     feed_loading_daily_fact_schema,
     ration_loading_daily_fact_schema,
-    mfr_daily_fact_schema
+    mfr_daily_fact_schema,
 )
 from transformers.gold import (
     feed_loading_daily_fact_transformer,
     ration_loading_daily_fact_transformer,
-    mfr_daily_fact_transformer
+    mfr_daily_fact_transformer,
 )
 
 DEFAULT_PARTITION_COLUMNS_GOLD = {"farm_license", "system_number"}
@@ -25,7 +25,7 @@ def gold_mapping():
                 transformer=feed_loading_daily_fact_transformer,
                 schema_str=feed_loading_daily_fact_schema,
                 partition_columns=DEFAULT_PARTITION_COLUMNS_GOLD,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD
+                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD,
             ),
             # TransConf(
             #     result_table="ration_loading_daily_fact",
@@ -39,7 +39,7 @@ def gold_mapping():
                 transformer=mfr_daily_fact_transformer,
                 schema_str=mfr_daily_fact_schema,
                 partition_columns=DEFAULT_PARTITION_COLUMNS_GOLD,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD
+                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD,
             ),
         ],
         existing_tables=silver1_mapping().get_all_tables(),

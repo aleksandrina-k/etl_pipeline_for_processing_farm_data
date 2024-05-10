@@ -1,11 +1,10 @@
 import logging
 import time
 from collections.abc import Callable
-from datetime import datetime, timedelta
 from inspect import signature
 from os import path
 from delta import DeltaTable
-from pyspark.sql import SparkSession, functions as F
+from pyspark.sql import SparkSession
 from pyspark.sql.types import _parse_datatype_string
 from typing import List, Dict, Set
 from exceptions import SchemaDoesNotMatchExpectedException
@@ -59,7 +58,9 @@ class TransConf:
         self.schema_str = schema_str
         self.schema = _parse_datatype_string(schema_str)
         self.zorder_columns = zorder_columns
-        self.partition_columns = partition_columns or TransConf.DEFAULT_PARTITION_COLUMNS
+        self.partition_columns = (
+            partition_columns or TransConf.DEFAULT_PARTITION_COLUMNS
+        )
         self.is_incremental = is_incremental
         self.enable_change_data_feed = enable_change_data_feed
         self.logger = logging.getLogger("CustomLogger")
@@ -69,14 +70,15 @@ class TransConf:
         Prepare dictionary with dataframe from input tables.
         Args:
             spark: Spark session
-            table_dict: dictionary with all input tables in format -> table_name: location (where the table is stored)
+            table_dict: dictionary with all input tables in format:
+                table_name: location (where the table is stored)
         Returns:
             Dictionary where key is a table name and value is a dataframe
         """
         res = {}
         for table_name, location in table_dict.items():
             self.logger.info(f"Reading table {table_name}")
-            res[table_name] = spark.read.load(f"{location}\{table_name}")
+            res[table_name] = spark.read.load(f"{location}\{table_name}")  # noqa W605
         return res
 
     def perform_transformation(
@@ -121,8 +123,7 @@ class TransConf:
         end_time = time.time()
         time_diff = round((end_time - start_time) / 60, 4)
         self.logger.info(
-            f"Table {self.result_table} is processed."
-            f"It took: {time_diff} minutes"
+            f"Table {self.result_table} is processed." f"It took: {time_diff} minutes"
         )
 
     def optimize_result_table(self, spark: SparkSession, result_dir_location: str):

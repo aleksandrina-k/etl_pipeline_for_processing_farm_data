@@ -10,5 +10,5 @@ def process_silver0_to_silver1(spark: SparkSession, config: PipelineConfig):
         spark=spark,
         mapping=mapping,
         input_dir_location=config.silver_dir_location,
-        result_dir_location=config.silver_dir_location
+        result_dir_location=config.silver_dir_location,
     )

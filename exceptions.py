@@ -1,7 +1,5 @@
 from typing import Set, List
 
-from pyspark.sql.types import StructType
-
 
 class ConfigParamMissingException(Exception):
     def __init__(self, param_name: str):
@@ -10,9 +8,7 @@ class ConfigParamMissingException(Exception):
 
 
 class SchemaDoesNotMatchExpectedException(Exception):
-    def __init__(
-        self, result_table: str, expected_schema, actual_schema
-    ):
+    def __init__(self, result_table: str, expected_schema, actual_schema):
         self.result_table = result_table
         self.expected_schema = expected_schema
         self.actual_schema = actual_schema

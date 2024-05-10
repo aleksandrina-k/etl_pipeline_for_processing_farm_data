@@ -4,7 +4,7 @@ from exceptions import (
     DuplicatesTablesException,
     NotAllInputTablesAreDeclaredException,
     UnknownInputTableException,
-    CyclicDependenciesException
+    CyclicDependenciesException,
 )
 from orchestration.trans_conf import TransConf
 

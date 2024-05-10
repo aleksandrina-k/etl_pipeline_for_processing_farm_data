@@ -1,5 +1,3 @@
-from schemas.common import BASE_COLUMNS
-
 farm_info_schema_str = """
     farm_license STRING,
     system_number INTEGER,

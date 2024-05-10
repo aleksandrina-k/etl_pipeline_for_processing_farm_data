@@ -16,7 +16,9 @@ class GenerateFarmData(Job):
 
         # generate data
         farm_data = generate_farm_data(10)
-        farm_info_df = self.spark.createDataFrame(farm_data, schema=_parse_datatype_string(farm_info_schema_str))
+        farm_info_df = self.spark.createDataFrame(
+            farm_data, schema=_parse_datatype_string(farm_info_schema_str)
+        )
         farm_info_df.show(truncate=False)
 
         table_location = path.join(config.db_location, config.farm_table_name)
@@ -31,7 +33,7 @@ class GenerateFarmData(Job):
             self.spark,
             farm_info_df,
             table_location=table_location,
-            match_columns={"farm_license", "system_number"}
+            match_columns={"farm_license", "system_number"},
         )
 
         df_after_merge = self.spark.read.load(table_location)

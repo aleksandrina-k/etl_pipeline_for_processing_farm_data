@@ -34,15 +34,20 @@ class Job(ABC):
     def _prepare_spark(spark) -> SparkSession:
         if not spark:
             builder = (
-                SparkSession.builder.master("local[*]").appName("Diplomna")
-                    .config("spark.jars.packages", "io.delta:delta-core_2.12:2.4.0")
-                    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-                    .config("spark.sql.catalog.spark_catalog",
-                            "org.apache.spark.sql.delta.catalog.DeltaCatalog"
-                            )
-                    .config("spark.executor.memory", "8g")
-                    .config("spark.driver.memory", "8g")
-                    .config("spark.driver.maxResultSize", "8g")
+                SparkSession.builder.master("local[*]")
+                .appName("Diplomna")
+                .config("spark.jars.packages", "io.delta:delta-core_2.12:2.4.0")
+                .config(
+                    "spark.sql.extensions",
+                    "io.delta.sql.DeltaSparkSessionExtension"
+                )
+                .config(
+                    "spark.sql.catalog.spark_catalog",
+                    "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+                )
+                .config("spark.executor.memory", "8g")
+                .config("spark.driver.memory", "8g")
+                .config("spark.driver.maxResultSize", "8g")
             )
             return configure_spark_with_delta_pip(builder).getOrCreate()
         else:
@@ -134,7 +139,7 @@ class Job(ABC):
             self.get_parameter("gold_dir_name"),
             self.get_parameter("farm_table_name"),
             self.get_parameter("bronze_table_name"),
-            self.get_parameter("warehouse_folder_name")
+            self.get_parameter("warehouse_folder_name"),
         )
 
     @abstractmethod

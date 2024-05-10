@@ -6,9 +6,7 @@ from randomtimestamp import randomtimestamp
 def generate_farm_data(n: int) -> list:
     farms_data = []
     for _ in range(n):
-        current_farm_data = [
-            value for key, value in vars(Farm()).items()
-        ]
+        current_farm_data = [value for key, value in vars(Farm()).items()]
         farms_data.append(current_farm_data)
 
     return farms_data
@@ -26,7 +24,7 @@ class Farm:
         "Slovenia": "Piran",
         "Poland": "Krakow",
         "Greece": "Thessaloniki",
-        "Sweden": "Umea"
+        "Sweden": "Umea",
     }
 
     def __init__(self):
@@ -38,10 +36,9 @@ class Farm:
 
     def generate_farm_license(self):
         new_licence_parts = [
-            ''.join(random.choices(self.ALL_CHARACTERS, k=5))
-            for _ in range(3)
+            "".join(random.choices(self.ALL_CHARACTERS, k=5)) for _ in range(3)
         ]
-        return '-'.join(new_licence_parts)
+        return "-".join(new_licence_parts)
 
     @staticmethod
     def generate_system_number():
@@ -58,5 +55,5 @@ class Farm:
         return randomtimestamp(start_year=2018, end_year=2022)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(generate_farm_data(10))

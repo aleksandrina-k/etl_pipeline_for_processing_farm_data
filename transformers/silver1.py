@@ -104,14 +104,14 @@ def silver_mfr_loading_activity_transformer(
 
 def silver_mfr_config_dim_transformer(mfr_config) -> DataFrame:
     """
-        Create a dim DataFrame with mfr configuration data with a uuid
+    Create a dim DataFrame with mfr configuration data with a uuid
 
-        Args:
-            mfr_config: DataFrame with mfr_config data
-        Returns:
-            DataFrame with all new configurations per device, start and end time and
-            a uuid in mfrConfigUuid
-        """
+    Args:
+        mfr_config: DataFrame with mfr_config data
+    Returns:
+        DataFrame with all new configurations per device, start and end time and
+        a uuid in mfrConfigUuid
+    """
 
     mfr_config = (
         mfr_config
@@ -126,36 +126,32 @@ def silver_mfr_config_dim_transformer(mfr_config) -> DataFrame:
     mfr_config_dim = create_dim_table(
         mfr_config,
         partition_columns=["farm_license", "system_number", "dev_number"],
-        column_names=[
-            "freqTypeMixer", "freqTypeRoller",
-            "relaysType", "phases"
-        ]
+        column_names=["freqTypeMixer", "freqTypeRoller", "relaysType", "phases"],
     )
 
     return (
-        mfr_config_dim
-            .withColumn("mfrConfigUuid", uuid_udf())
-            # Rename columns
-            .withColumnRenamed("freqTypeMixer", "freqControllerTypeMixer")
-            .withColumnRenamed("freqTypeRoller", "freqControllerTypeDosingRoller")
-            .withColumnRenamed("relaysType", "relaysType")
-            .replace(to_replace={"THREE_PHASE": "3", "ONE_PHASE": "1"}, subset="phases")
-            .withColumn(
-                "mfr_type",
-                F.when(F.col("relaysType") == "EM773", "M1")
-                .when(F.col("relaysType") == "SCHNEIDER", "M2")
-                .otherwise("M3")
-            )
+        mfr_config_dim.withColumn("mfrConfigUuid", uuid_udf())
+        # Rename columns
+        .withColumnRenamed("freqTypeMixer", "freqControllerTypeMixer")
+        .withColumnRenamed("freqTypeRoller", "freqControllerTypeDosingRoller")
+        .withColumnRenamed("relaysType", "relaysType")
+        .replace(to_replace={"THREE_PHASE": "3", "ONE_PHASE": "1"}, subset="phases")
+        .withColumn(
+            "mfr_type",
+            F.when(F.col("relaysType") == "EM773", "M1")
+            .when(F.col("relaysType") == "SCHNEIDER", "M2")
+            .otherwise("M3"),
+        )
     )
 
 
 def silver_kitchen_feed_names_dim_transformer(t4c_kitchen_feed_names) -> DataFrame:
     """
-        Args:
-            t4c_kitchen_feed_names: Dataframe with data about names of different feed
-        Returns:
-            Enriched dataframe with valid from/to timestamps for each name.
-        """
+    Args:
+        t4c_kitchen_feed_names: Dataframe with data about names of different feed
+    Returns:
+        Enriched dataframe with valid from/to timestamps for each name.
+    """
 
     feed_names = (
         t4c_kitchen_feed_names
@@ -168,17 +164,17 @@ def silver_kitchen_feed_names_dim_transformer(t4c_kitchen_feed_names) -> DataFra
     return create_dim_table(
         feed_names,
         partition_columns=["farm_license", "system_number", "feedId"],
-        column_names=["name"]
+        column_names=["name"],
     )
 
 
 def silver_ration_names_dim_transformer(t4c_ration_names) -> DataFrame:
     """
-        Args:
-            t4c_ration_names: Dataframe with data about names of different rations
-        Returns:
-            Enriched dataframe with valid from/to timestamps for each name.
-        """
+    Args:
+        t4c_ration_names: Dataframe with data about names of different rations
+    Returns:
+        Enriched dataframe with valid from/to timestamps for each name.
+    """
 
     ration_names = (
         t4c_ration_names
@@ -191,5 +187,5 @@ def silver_ration_names_dim_transformer(t4c_ration_names) -> DataFrame:
     return create_dim_table(
         ration_names,
         partition_columns=["farm_license", "system_number", "rationId"],
-        column_names=["name"]
+        column_names=["name"],
     )

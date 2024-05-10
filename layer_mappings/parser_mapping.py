@@ -5,7 +5,7 @@ from schemas.silver0 import (
     t4c_ration_names_schema,
     t4c_kitchen_feed_names_schema,
     mfr_load_done_schema,
-    mfr_load_done_result_schema
+    mfr_load_done_result_schema,
 )
 from transformers.parsers import (
     parse_mfr_config,
@@ -13,7 +13,7 @@ from transformers.parsers import (
     parse_mfr_load_done,
     parse_mfr_load_done_result,
     parse_t4c_kitchen_feed_names,
-    parse_t4c_ration_names
+    parse_t4c_ration_names,
 )
 
 
@@ -42,7 +42,8 @@ def parser_mapping():
                 result_table="mfr_load_done",
                 parser=parse_mfr_load_done,
                 schema_str=mfr_load_done_schema,
-                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS | {"rationId", "seqNr", "feedId"},
+                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS
+                | {"rationId", "seqNr", "feedId"},
                 enable_change_data_feed=True,
             ),
             ParserConf(

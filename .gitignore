@@ -11,3 +11,6 @@ venv/
 build/
 spark-warehouse
 __pycache__
+
+visualizer/lib/
+visualizer/*.html

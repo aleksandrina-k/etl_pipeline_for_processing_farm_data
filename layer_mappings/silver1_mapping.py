@@ -5,13 +5,13 @@ from schemas.silver1 import (
     silver_mfr_loading_activity_schema,
     silver_mfr_config_dim_schema,
     silver_kitchen_feed_names_dim_schema,
-    silver_ration_names_dim_schema
+    silver_ration_names_dim_schema,
 )
 from transformers.silver1 import (
     silver_mfr_loading_activity_transformer,
     silver_kitchen_feed_names_dim_transformer,
     silver_mfr_config_dim_transformer,
-    silver_ration_names_dim_transformer
+    silver_ration_names_dim_transformer,
 )
 
 DEFAULT_ZORDER_COLUMNS_SILVER1 = {"farm_license"}
@@ -28,26 +28,26 @@ def silver1_mapping():
                 result_table="silver_mfr_loading_activity",
                 transformer=silver_mfr_loading_activity_transformer,
                 schema_str=silver_mfr_loading_activity_schema,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_SILVER1
+                zorder_columns=DEFAULT_ZORDER_COLUMNS_SILVER1,
             ),
             TransConf(
                 result_table="silver_mfr_config_dim",
                 transformer=silver_mfr_config_dim_transformer,
                 schema_str=silver_mfr_config_dim_schema,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_SILVER1
+                zorder_columns=DEFAULT_ZORDER_COLUMNS_SILVER1,
             ),
             TransConf(
                 result_table="silver_kitchen_feed_names_dim",
                 transformer=silver_kitchen_feed_names_dim_transformer,
                 schema_str=silver_kitchen_feed_names_dim_schema,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_SILVER1
+                zorder_columns=DEFAULT_ZORDER_COLUMNS_SILVER1,
             ),
             TransConf(
                 result_table="silver_ration_names_dim",
                 transformer=silver_ration_names_dim_transformer,
                 schema_str=silver_ration_names_dim_schema,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_SILVER1
+                zorder_columns=DEFAULT_ZORDER_COLUMNS_SILVER1,
             ),
         ],
-        existing_tables=existing_tables
+        existing_tables=existing_tables,
     )

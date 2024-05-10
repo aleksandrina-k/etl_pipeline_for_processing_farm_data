@@ -4,7 +4,7 @@ from jobs.process_silver0_to_silver1 import ProcessSilver0ToSilver1
 from jobs.process_silver1_to_gold import ProcessSilver1ToGold
 from jobs.visualization import Visualization
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # TODO: convert all columns to snake_case
     config_file_path = r"conf/load_data_from_warehouse.json"
 

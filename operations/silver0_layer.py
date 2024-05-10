@@ -19,27 +19,29 @@ def process_silver0_to_bronze(spark: SparkSession, config: PipelineConfig):
                 spark=spark,
                 conf=conf,
                 bronze_table_df=bronze_data_df,
-                result_dir_location=config.silver_dir_location
+                result_dir_location=config.silver_dir_location,
             )
 
 
 def _process_bronze_to_msg_table(
-        spark: SparkSession,
-        conf: ParserConf,
-        bronze_table_df: DataFrame,
-        result_dir_location: str
+    spark: SparkSession,
+    conf: ParserConf,
+    bronze_table_df: DataFrame,
+    result_dir_location: str,
 ):
     logger = logging.getLogger("CustomLogger")
     logger.info(f"Starting to process {conf.result_table}")
     result_table_location = path.join(result_dir_location, conf.result_table)
 
-    silver_df = conf.parser(bronze_table_df).withColumn("year_month", F.date_format(F.col("time"), "yyyy-MM"))
+    silver_df = conf.parser(bronze_table_df).withColumn(
+        "year_month", F.date_format(F.col("time"), "yyyy-MM")
+    )
     (
         silver_df.write.format("delta")
-            .option("schema", conf.schema)
-            .mode("append")
-            .partitionBy(list(conf.DEFAULT_PARTITION_COLUMNS))
-            .save(result_table_location)
+        .option("schema", conf.schema)
+        .mode("append")
+        .partitionBy(list(conf.DEFAULT_PARTITION_COLUMNS))
+        .save(result_table_location)
     )
 
     df = spark.read.load(result_table_location)

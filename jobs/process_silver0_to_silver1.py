@@ -3,7 +3,6 @@ from operations.silver1_layer import process_silver0_to_silver1
 
 
 class ProcessSilver0ToSilver1(Job):
-
     def __init__(self, config_file_path, spark=None):
         Job.__init__(self, config_file_path, spark)
 

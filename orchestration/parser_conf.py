@@ -35,14 +35,14 @@ class ParserConf:
     DEFAULT_PARTITION_COLUMNS = {"year_month"}
 
     def __init__(
-            self,
-            result_table: str,
-            parser: Callable[[DataFrame], DataFrame],
-            schema_str: str,
-            match_columns: Set[str] = None,
-            partition_columns: Set[str] = None,
-            zorder_columns: Set[str] = None,
-            enable_change_data_feed: bool = False,
+        self,
+        result_table: str,
+        parser: Callable[[DataFrame], DataFrame],
+        schema_str: str,
+        match_columns: Set[str] = None,
+        partition_columns: Set[str] = None,
+        zorder_columns: Set[str] = None,
+        enable_change_data_feed: bool = False,
     ):
         """
         Parser configuration constructor
@@ -64,7 +64,7 @@ class ParserConf:
         self.schema = _parse_datatype_string(schema_str)
         self.match_columns = match_columns or ParserConf.DEFAULT_MATCH_COLUMNS
         self.partition_columns = (
-                partition_columns or ParserConf.DEFAULT_PARTITION_COLUMNS
+            partition_columns or ParserConf.DEFAULT_PARTITION_COLUMNS
         )
         self.zorder_columns = zorder_columns or ParserConf.DEFAULT_ZORDER_COLUMNS
         self.enable_change_data_feed = enable_change_data_feed
@@ -83,7 +83,9 @@ class ParserConf:
 
         table_location = path.join(result_dir_location, self.result_table)
         delta_table = DeltaTable.forPath(spark, table_location)
-        delta_table.optimize().where(where_statement).executeZOrderBy(list(self.zorder_columns))
+        delta_table.optimize().where(where_statement).executeZOrderBy(
+            list(self.zorder_columns)
+        )
 
         end_time = time.time()
         time_diff = round((end_time - start_time) / 60, 4)
