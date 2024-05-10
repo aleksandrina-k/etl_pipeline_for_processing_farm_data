@@ -1,6 +1,3 @@
-#################################################################
-# NOT WORKING
-#################################################################
 from datetime import date, datetime
 from jobs.job import Job
 from pyspark.sql import functions as F
@@ -12,13 +9,12 @@ from dash import Dash, dcc, html, Input, Output
 DEFAULT_START_DATE = date(2021, 1, 1)
 DEFAULT_END_DATE = date(2023, 12, 31)
 KPIS = [
-    "loadingAccuracyPerc", "totalRequestedWeightKg",
-    "totalLoadedWeightKg", "avgRequestedWeightKg",
-    "avgLoadedWeightKg"
+    'loadingAccuracyPerc', 'totalRequestedWeightKg', 'totalLoadedWeightKg',
+    'nrSchneiderFreqControl', 'nrCommskFreqControl'
 ]
 
 
-class VisualizeFeed(Job):
+class VisualizeMfr(Job):
 
     def __init__(self, config_file_path, spark=None):
         Job.__init__(self, config_file_path, spark)
@@ -57,31 +53,29 @@ class VisualizeFeed(Job):
             dcc.Dropdown(
                 id="farm_picker",
                  options=[{"label": x, "value": x} for x in farms],
-                 multi=False,
+                 multi=True,
                  value='',
                  style={'width': "40%"}
             ),
 
-            # TODO: Maybe add Dropdown menu for feeds
-
             dcc.RadioItems(
                 id='kpi_picker',
                 options=KPIS,
-                value=KPIS[0],
+                value=KPIS[0]
             ),
 
 
             html.Div(id='output_container', children=[]),
             html.Br(),
 
-            dcc.Graph(id='feed_loading_daily_fact_map', figure={})
+            dcc.Graph(id='mfr_daily_fact_map', figure={})
 
         ])
 
         # -- Import and clean data
         df = (
             self.spark.read
-                .load("../spark-warehouse/gold/feed_loading_daily_fact")
+                .load("../spark-warehouse/gold/mfr_daily_fact")
                 .toPandas()
         )
 
@@ -89,7 +83,7 @@ class VisualizeFeed(Job):
         # Connect the Plotly graphs with Dash Components
         @app.callback(
             [Output(component_id='output_container', component_property='children'),
-             Output(component_id='feed_loading_daily_fact_map', component_property='figure')],
+             Output(component_id='mfr_daily_fact_map', component_property='figure')],
             [Input(component_id='date_picker', component_property='start_date'),
              Input(component_id='date_picker', component_property='end_date'),
              Input(component_id='farm_picker', component_property='value'),
@@ -115,7 +109,7 @@ class VisualizeFeed(Job):
                 dff = dff[dff["date"] <= end_date]
             if option_slctd_kpi is not None:
                 dff = (
-                    dff.groupby(['farm_license', 'system_number', 'date', 'feedId'])
+                    dff.groupby(['farm_license', 'system_number', 'date'])
                     # the table is already aggregated by the columns above,
                     # so it doesn't matter which agg function we use
                     [[option_slctd_kpi]].sum()
@@ -127,7 +121,7 @@ class VisualizeFeed(Job):
                 data_frame=dff,
                 x="date",
                 y=option_slctd_kpi,
-                color=['feedId'],
+                color='farm_license',
                 markers=True,
                 title=option_slctd_kpi
             )
@@ -140,5 +134,5 @@ class VisualizeFeed(Job):
 if __name__ == '__main__':
     config_file_path = r"../conf/load_data_from_warehouse.json"
 
-    job = VisualizeFeed(config_file_path)
+    job = VisualizeMfr(config_file_path)
     job.launch()
