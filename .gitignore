@@ -1,0 +1,14 @@
+.cache
+.ipython
+.ivy2
+.local
+.vscode
+.ipynb_checkpoints
+.eggs
+
+venv/
+.idea/
+build/
+
+__pycache__/*
+_pycache_/

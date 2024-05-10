@@ -1,0 +1,9 @@
+/* ONLY COMMENTS LIKE THIS ARE SUPPORTED! They are removed by utils.json.remove_comments */
+{
+  "bronze_dir_name": "bronze",
+  "silver_dir_name": "silver",
+  "gold_dir_name": "gold",
+  "farm_table_name": "farm_info",
+  "bronze_table_name": "bronze_table",
+  "warehouse_folder_name": "spark-warehouse"
+}
