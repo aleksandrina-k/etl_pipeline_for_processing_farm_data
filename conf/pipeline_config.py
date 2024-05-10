@@ -29,9 +29,7 @@ class PipelineConfig:
         self.silver_dir_location = path.join(
             self.warehouse_location, self.silver_dir_name
         )
-        self.gold_dir_location = path.join(
-            self.warehouse_location, self.gold_dir_name
-        )
+        self.gold_dir_location = path.join(self.warehouse_location, self.gold_dir_name)
 
     def get_farm_table_location(self):
         return path.join(self.bronze_dir_location, self.farm_table_name)

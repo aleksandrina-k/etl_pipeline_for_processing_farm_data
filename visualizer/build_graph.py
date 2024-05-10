@@ -110,9 +110,7 @@ def illustrate_mapping():
         string = "<b>Uses:</b><br>" + "<br>".join(
             [k for k, v in neighbor_map.items() if node["id"] in v]
         )
-        string += "<br><b>Used By:</b><br>" + "<br>".join(
-            neighbor_map[node["id"]]
-        )
+        string += "<br><b>Used By:</b><br>" + "<br>".join(neighbor_map[node["id"]])
         node["title"] = string
 
     net.show_buttons()
