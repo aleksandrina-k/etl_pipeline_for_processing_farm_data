@@ -5,6 +5,7 @@
 .vscode
 .ipynb_checkpoints
 .eggs
+.cpython-310.pyc
 
 venv/
 .idea/
