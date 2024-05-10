@@ -5,12 +5,8 @@
 .vscode
 .ipynb_checkpoints
 .eggs
-.cpython-310.pyc
 
 venv/
 .idea/
 build/
-
-__pycache__/
-_pycache_/
 spark-warehouse
