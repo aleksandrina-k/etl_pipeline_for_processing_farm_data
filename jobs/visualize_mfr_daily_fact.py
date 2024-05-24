@@ -1,10 +1,9 @@
 from datetime import date, datetime
 from jobs.job import Job
-from pyspark.sql import functions as F
-import pandas as pd
-import plotly.graph_objects as go
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
+
+from operations.helper_functions import extract_all_farm_licenses
 
 DEFAULT_START_DATE = date(2021, 1, 1)
 DEFAULT_END_DATE = date(2023, 12, 31)
@@ -23,18 +22,9 @@ class VisualizeMfr(Job):
 
     def launch(self):
         self.logger.info("Starting Visualization With Job Job")
-        config = self.common_initialization()
 
         # get all farms
-        farms = [
-            x[0]
-            for x in self.spark.read.load("../spark-warehouse/bronze/bronze_table")
-            .groupBy("farm_license")
-            .count()
-            .select("farm_license")
-            .collect()
-        ]
-        farms.sort()
+        farms = extract_all_farm_licenses("../spark-warehouse/bronze/bronze_table")
 
         app = Dash(__name__)
 

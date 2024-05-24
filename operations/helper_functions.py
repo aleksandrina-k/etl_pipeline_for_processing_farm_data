@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Set, List
 from pyspark.sql import SparkSession, DataFrame, functions as F, Window
-from delta import *
+from delta import DeltaTable
 from orchestration.trans_conf import TransConf
 from orchestration.trans_mapping import TransMapping
 
@@ -210,3 +210,22 @@ def perform_transformation(
             )
             if conf.zorder_columns:
                 conf.optimize_result_table(spark, result_dir_location)
+
+
+def extract_all_farm_licenses(table_location: str) -> list:
+    """
+    :param table_location: location to the in the file system,
+        from where the licenses will be extracted
+    :return: Sorted list of all farm licenses
+    """
+    spark = SparkSession.builder.getOrCreate()
+    farms = [
+        x[0]
+        for x in spark.read.load(table_location)
+        .groupBy("farm_license")
+        .count()
+        .select("farm_license")
+        .collect()
+    ]
+    farms.sort()
+    return farms
