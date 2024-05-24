@@ -1,13 +1,9 @@
-#################################################################
-# NOT WORKING
-#################################################################
 from datetime import date, datetime
 from jobs.job import Job
-from pyspark.sql import functions as F
-import pandas as pd
-import plotly.graph_objects as go
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
+
+from operations.helper_functions import extract_all_farm_licenses
 
 DEFAULT_START_DATE = date(2021, 1, 1)
 DEFAULT_END_DATE = date(2023, 12, 31)
@@ -26,18 +22,13 @@ class VisualizeFeed(Job):
 
     def launch(self):
         self.logger.info("Starting Visualization With Job Job")
-        config = self.common_initialization()
 
+        # -- Import and clean data
         # get all farms
-        farms = [
-            x[0]
-            for x in self.spark.read.load("../spark-warehouse/bronze/bronze_table")
-            .groupBy("farm_license")
-            .count()
-            .select("farm_license")
-            .collect()
-        ]
-        farms.sort()
+        farms = extract_all_farm_licenses("../spark-warehouse/bronze/bronze_table")
+        df = self.spark.read.load(
+            "../spark-warehouse/gold/feed_loading_daily_fact"
+        ).toPandas()
 
         app = Dash(__name__)
 
@@ -49,13 +40,14 @@ class VisualizeFeed(Job):
                     "Web Application Dashboards with Dash",
                     style={"text-align": "center"},
                 ),
-                dcc.DatePickerRange(
+                dcc.DatePickerSingle(
                     id="date_picker",
                     min_date_allowed=DEFAULT_START_DATE,
                     max_date_allowed=DEFAULT_END_DATE,
-                    start_date=DEFAULT_START_DATE,
-                    end_date=DEFAULT_START_DATE,
-                    end_date_placeholder_text="Select a date!",
+                    initial_visible_month=date(2023, 1, 1),
+                    display_format="YYYY-MM-DD",
+                    stay_open_on_select=True,
+
                 ),
                 dcc.Dropdown(
                     id="farm_picker",
@@ -70,16 +62,15 @@ class VisualizeFeed(Job):
                     options=KPIS,
                     value=KPIS[0],
                 ),
+
+                # dash_table.DataTable(data=df.to_dict("records"), page_size=15),
+
+
                 html.Div(id="output_container", children=[]),
                 html.Br(),
                 dcc.Graph(id="feed_loading_daily_fact_map", figure={}),
             ]
         )
-
-        # -- Import and clean data
-        df = self.spark.read.load(
-            "../spark-warehouse/gold/feed_loading_daily_fact"
-        ).toPandas()
 
         # ------------------------------------------------------------------------------
         # Connect the Plotly graphs with Dash Components
@@ -92,54 +83,47 @@ class VisualizeFeed(Job):
                 ),
             ],
             [
-                Input(component_id="date_picker", component_property="start_date"),
-                Input(component_id="date_picker", component_property="end_date"),
+                Input(component_id="date_picker", component_property="date"),
                 Input(component_id="farm_picker", component_property="value"),
                 Input(component_id="kpi_picker", component_property="value"),
             ],
         )
         def update_graph(
-            option_slctd_start_date,
-            option_slctd_end_date,
-            option_slctd_farm,
-            option_slctd_kpi,
+            selected_date_option,
+            selected_farm_option,
+            selected_kpi_option,
         ):
 
-            # container = f"Display {option_slctd_kpi} KPI for {option_slctd_farm} for time period " \
+            # container = f"Display {selected_kpi_option} KPI for {selected_farm_option} for time period " \
             #             f"[{option_slctd_start_date} - {option_slctd_end_date}]"
             container = ""
             dff = df.copy()
 
             # in case only one farm is selected
-            if option_slctd_farm is not None:
-                if isinstance(option_slctd_farm, str):
-                    option_slctd_farm = [option_slctd_farm]
-                dff = dff[dff["farm_license"].isin(option_slctd_farm)]
-            if option_slctd_start_date is not None:
-                start_date = datetime.strptime(
-                    option_slctd_start_date, "%Y-%m-%d"
+            if selected_farm_option is not None:
+                if isinstance(selected_farm_option, str):
+                    selected_farm_option = [selected_farm_option]
+                dff = dff[dff["farm_license"].isin(selected_farm_option)]
+            if selected_date_option is not None:
+                date = datetime.strptime(
+                    selected_date_option, "%Y-%m-%d"
                 ).date()
-                dff = dff[dff["date"] >= start_date]
-            if option_slctd_end_date is not None:
-                end_date = datetime.strptime(option_slctd_end_date, "%Y-%m-%d").date()
-                dff = dff[dff["date"] <= end_date]
-            if option_slctd_kpi is not None:
+                dff = dff[dff["date"] == date]
+            if selected_kpi_option is not None:
                 dff = (
-                    dff.groupby(["farm_license", "system_number", "date", "feedId"])
+                    dff.groupby(["farm_license", "system_number", "date", "feedName"])
                     # the table is already aggregated by the columns above,
                     # so it doesn't matter which agg function we use
-                    [[option_slctd_kpi]].sum()
+                    [[selected_kpi_option]].sum()
                 )
                 dff.reset_index(inplace=True)
 
             # Plotly Express
-            fig = px.line(
+            fig = px.histogram(
                 data_frame=dff,
-                x="date",
-                y=option_slctd_kpi,
-                color=["feedId"],
-                markers=True,
-                title=option_slctd_kpi,
+                x="feedName",
+                y=selected_kpi_option,
+                title=selected_kpi_option
             )
 
             return container, fig

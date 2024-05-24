@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from jobs.job import Job
 import plotly.express as px
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output  # , dash_table
 
 from operations.helper_functions import extract_all_farm_licenses
 
@@ -23,8 +23,10 @@ class VisualizeMfr(Job):
     def launch(self):
         self.logger.info("Starting Visualization With Job Job")
 
+        # -- Import and clean data
         # get all farms
         farms = extract_all_farm_licenses("../spark-warehouse/bronze/bronze_table")
+        df = self.spark.read.load("../spark-warehouse/gold/mfr_daily_fact").toPandas()
 
         app = Dash(__name__)
 
@@ -42,6 +44,8 @@ class VisualizeMfr(Job):
                     max_date_allowed=DEFAULT_END_DATE,
                     start_date=DEFAULT_START_DATE,
                     end_date=DEFAULT_START_DATE,
+                    initial_visible_month=date(2023, 1, 1),
+                    display_format="YYYY-MM-DD",
                     end_date_placeholder_text="Select a date!",
                 ),
                 dcc.Dropdown(
@@ -52,14 +56,14 @@ class VisualizeMfr(Job):
                     style={"width": "40%"},
                 ),
                 dcc.RadioItems(id="kpi_picker", options=KPIS, value=KPIS[0]),
+
+                # dash_table.DataTable(data=df.to_dict("records"), page_size=15),
+
                 html.Div(id="output_container", children=[]),
                 html.Br(),
                 dcc.Graph(id="mfr_daily_fact_map", figure={}),
             ]
         )
-
-        # -- Import and clean data
-        df = self.spark.read.load("../spark-warehouse/gold/mfr_daily_fact").toPandas()
 
         # ------------------------------------------------------------------------------
         # Connect the Plotly graphs with Dash Components
