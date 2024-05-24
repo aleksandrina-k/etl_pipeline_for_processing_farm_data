@@ -56,9 +56,7 @@ class VisualizeMfr(Job):
                     style={"width": "40%"},
                 ),
                 dcc.RadioItems(id="kpi_picker", options=KPIS, value=KPIS[0]),
-
                 # dash_table.DataTable(data=df.to_dict("records"), page_size=15),
-
                 html.Div(id="output_container", children=[]),
                 html.Br(),
                 dcc.Graph(id="mfr_daily_fact_map", figure={}),

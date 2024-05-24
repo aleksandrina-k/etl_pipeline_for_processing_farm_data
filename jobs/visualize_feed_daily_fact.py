@@ -47,7 +47,6 @@ class VisualizeFeed(Job):
                     initial_visible_month=date(2023, 1, 1),
                     display_format="YYYY-MM-DD",
                     stay_open_on_select=True,
-
                 ),
                 dcc.Dropdown(
                     id="farm_picker",
@@ -62,10 +61,7 @@ class VisualizeFeed(Job):
                     options=KPIS,
                     value=KPIS[0],
                 ),
-
                 # dash_table.DataTable(data=df.to_dict("records"), page_size=15),
-
-
                 html.Div(id="output_container", children=[]),
                 html.Br(),
                 dcc.Graph(id="feed_loading_daily_fact_map", figure={}),
@@ -105,9 +101,7 @@ class VisualizeFeed(Job):
                     selected_farm_option = [selected_farm_option]
                 dff = dff[dff["farm_license"].isin(selected_farm_option)]
             if selected_date_option is not None:
-                date = datetime.strptime(
-                    selected_date_option, "%Y-%m-%d"
-                ).date()
+                date = datetime.strptime(selected_date_option, "%Y-%m-%d").date()
                 dff = dff[dff["date"] == date]
             if selected_kpi_option is not None:
                 dff = (
@@ -123,7 +117,7 @@ class VisualizeFeed(Job):
                 data_frame=dff,
                 x="feedName",
                 y=selected_kpi_option,
-                title=selected_kpi_option
+                title=selected_kpi_option,
             )
 
             return container, fig
