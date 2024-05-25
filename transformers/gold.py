@@ -4,6 +4,8 @@ from operations.helper_functions import create_dim_table, split_carryover_items_
 
 MFR1_DEV_LDN = [71, 118]
 MFR2_DEV_LDN = [72, 119]
+SECONDS_IN_HOUR = 3600
+GRAMS_IN_KILOGRAM = 1000
 
 
 def _explode_mfr_loading_activity(
@@ -71,10 +73,16 @@ def feed_daily_fact_transformer(
                 )
             ).alias("loadingAccuracyPerc"),
         )
-        .withColumn("totalRequestedWeightKg", F.col("totalRequestedWeightG") / 1000)
-        .withColumn("totalLoadedWeightKg", F.col("totalLoadedWeightG") / 1000)
-        .withColumn("avgRequestedWeightKg", F.col("avgRequestedWeightG") / 1000)
-        .withColumn("avgLoadedWeightKg", F.col("avgLoadedWeightG") / 1000)
+        .withColumn(
+            "totalRequestedWeightKg", F.col("totalRequestedWeightG") / GRAMS_IN_KILOGRAM
+        )
+        .withColumn(
+            "totalLoadedWeightKg", F.col("totalLoadedWeightG") / GRAMS_IN_KILOGRAM
+        )
+        .withColumn(
+            "avgRequestedWeightKg", F.col("avgRequestedWeightG") / GRAMS_IN_KILOGRAM
+        )
+        .withColumn("avgLoadedWeightKg", F.col("avgLoadedWeightG") / GRAMS_IN_KILOGRAM)
         .withColumn("nextDate", F.lead(F.col("date")).over(feed_window))
         .drop(
             "totalRequestedWeightG",
@@ -109,86 +117,119 @@ def feed_daily_fact_transformer(
     return with_missing_days
 
 
-def ration_loading_daily_fact_transformer(
+def ration_daily_fact_transformer(
     silver_mfr_loading_activity: DataFrame,
     silver_ration_names_dim: DataFrame,
 ) -> DataFrame:
 
     feed_exploded = _explode_mfr_loading_activity(silver_mfr_loading_activity)
 
-    ration_window = Window.partitionBy(
+    ration_window_date = Window.partitionBy(
         "farm_license", "system_number", "rationId"
     ).orderBy("date")
 
     join_condition_dim = (
-        (F.col("f.farm_license") == F.col("dim.farm_license"))
-        & (F.col("f.system_number") == F.col("dim.system_number"))
-        & (F.col("f.rationId") == F.col("dim.rationId"))
-        & (F.col("f.date") > F.col("dim.startTime"))
-        & (F.col("f.date") <= F.col("dim.endTime"))
+        (F.col("r.farm_license") == F.col("dim.farm_license"))
+        & (F.col("r.system_number") == F.col("dim.system_number"))
+        & (F.col("r.rationId") == F.col("dim.rationId"))
+        & (F.col("r.date") > F.col("dim.startTime"))
+        & (F.col("r.date") <= F.col("dim.endTime"))
     )
 
-    ration_loading_daily_fact = (
+    columns_with_daily_values = [
+        "totalDurationH",
+        "totalLoadingSpeedKgPerH",
+        "totalRequestedWeightKg",
+        "totalLoadedWeightKg",
+        "avgNrOfFeedInRation",
+        "totalNrOfFeedPerLoad",
+        "totalNrBinsLoaded",
+        "loadingAccuracyPerc",
+    ]
+
+    ration_daily_fact = (
         feed_exploded.withColumn("date", F.to_date(F.col("startTime"), "MM-dd-yyyy"))
+        # if duration is <= 1 there is a problem and the record should be excluded from the calculations
+        .where(F.col("durationS") > 1)
+        # if loaded weight is <= 0 or >= 1200000 there is a problem
+        # and the record should be excluded from the calculations
+        .where(
+            (F.col("loadedWeightRationG") > 0)
+            & (F.col("loadedWeightRationG") < 1200000)
+        )
         .groupBy("farm_license", "system_number", "date", "loadingUuid")
         # The table has a row per feed, but also contains ration general information
         # Hence, we aggregate (sum/avg) the feed specific info but take first of the
         # ration specific information (after all it will be the same for all rows).
         .agg(
-            F.first("durationS").alias("durationS"),
-            F.first("loadingSpeedRationGPerS").alias("loadingSpeedRationGPerS"),
+            F.first(F.col("durationS") / SECONDS_IN_HOUR).alias("durationH"),
+            (F.first("loadingSpeedRationGPerS") / 3.6).alias(
+                "loadingSpeedRationKgPerH"
+            ),
             F.first("rationId").alias("rationId"),
-            F.sum("reqWeightFeedtypeG").alias("reqWeightPerLoadGSummed"),
-            F.sum("loadedWeightFeedtypeG").alias("loadedWeightPerLoadGSummed"),
-            F.sum("feedtypeLoadingDeviationG").alias("feedtypeLoadingDeviationGSummed"),
+            (F.sum("reqWeightFeedtypeG") / GRAMS_IN_KILOGRAM).alias(
+                "totalRequestedWeightPerLoadKg"
+            ),
+            F.sum((F.col("loadedWeightFeedtypeG") / GRAMS_IN_KILOGRAM)).alias(
+                "totalLoadedWeightPerLoadKg"
+            ),
             # if loading accuracy perc is <= 0 we set its accuracy to 0
             # it will be included in the calculation
             F.sum(
                 F.when(F.col("loadingAccuracyPercentage") <= 0, 0).otherwise(
                     F.col("loadingAccuracyPercentage")
                 )
-            ).alias("loadingAccuracyPercentageSummed"),
+            ).alias("loadingAccuracyPerc"),
             F.count("feedId").alias("nrOfFeedPerLoad"),
+            F.countDistinct("loadingUuid").alias("binsLoaded"),
         )
         .groupBy("farm_license", "system_number", "date", "rationId")
         .agg(
-            F.avg(F.col("durationS")).alias("avgDurationS"),
-            F.avg("loadingSpeedRationGPerS").alias("avgLoadingSpeedGperS"),
-            F.avg("reqWeightPerLoadGSummed").alias("avgRequestedWeightG"),
-            F.avg("loadedWeightPerLoadGSummed").alias("avgLoadedWeightG"),
-            F.avg("feedtypeLoadingDeviationGSummed").alias("avgLoadingDeviationG"),
-            F.sum("loadingAccuracyPercentageSummed").alias("loadingAccuracyPercSummed"),
-            F.sum("nrOfFeedPerLoad").alias("nrOfFeedPerRationPerDay"),
+            F.sum(F.col("durationH")).alias("totalDurationH"),
+            F.sum("loadingSpeedRationKgPerH").alias("totalLoadingSpeedKgPerH"),
+            F.sum("totalRequestedWeightPerLoadKg").alias("totalRequestedWeightKg"),
+            F.sum("totalLoadedWeightPerLoadKg").alias("totalLoadedWeightKg"),
+            F.sum("loadingAccuracyPerc").alias("loadingAccuracyPerc"),
+            F.avg("nrOfFeedPerLoad").alias("avgNrOfFeedInRation"),
+            F.sum("nrOfFeedPerLoad").alias("totalNrOfFeedPerLoad"),
+            F.sum("binsLoaded").alias("totalNrBinsLoaded"),
         )
         .withColumn(
             "loadingAccuracyPerc",
-            F.round(
-                F.col("loadingAccuracyPercSummed") / F.col("nrOfFeedPerRationPerDay"), 4
-            ),
+            F.round(F.col("loadingAccuracyPerc") / F.col("totalNrOfFeedPerLoad"), 4),
         )
-        .drop(
-            "loadingAccuracyPercSummed",
-            "nrOfFeedPerRationPerDay",
-        )
-        .withColumn("nextDate", F.lead(F.col("date")).over(ration_window))
-    )
-
-    with_ration_names = (
-        ration_loading_daily_fact.alias("f")
-        .join(silver_ration_names_dim.alias("dim"), on=join_condition_dim, how="left")
-        .select("f.*", F.col("name").alias("rationName"))
     )
 
     add_missing_days_func = split_carryover_items_factory(
         "date", "nextDate", use_posexplode=True
     )
 
-    with_missing_days = (
-        add_missing_days_func(
-            with_ration_names, "1 days", ["farm_license", "system_number", "rationId"]
+    with_kitchen_names = (
+        ration_daily_fact.alias("r")
+        .join(
+            silver_ration_names_dim.alias("dim"),
+            on=join_condition_dim,
+            how="left",
         )
-        .drop("nextDate", "startDate", "endDate", "pos")
-        .withColumn("date", F.to_date("date"))
+        .select("r.*", F.col("name").alias("rationName"))
+    )
+
+    with_missing_days = add_missing_days_func(
+        with_kitchen_names.withColumn(
+            "nextDate", F.lead(F.col("date")).over(ration_window_date)
+        ),
+        "1 days",
+        ["farm_license", "system_number", "rationId"],
+    ).select(
+        "farm_license",
+        "system_number",
+        "rationId",
+        F.col("date").cast("date"),
+        *[
+            F.when(F.col("pos") > 0, F.lit(None)).otherwise(F.col(c)).alias(c)
+            for c in columns_with_daily_values
+        ],
+        "rationName"
     )
 
     return with_missing_days
@@ -236,8 +277,12 @@ def mfr_daily_fact_transformer(
             F.sum("loadingAccuracyPercentageSummed").alias("loadingAccuracyPercSummed"),
             F.sum("nrOfFeedPerLoad").alias("nrOfFeedPerDay"),
         )
-        .withColumn("totalRequestedWeightKg", F.col("totalRequestedWeightG") / 1000)
-        .withColumn("totalLoadedWeightKg", F.col("totalLoadedWeightG") / 1000)
+        .withColumn(
+            "totalRequestedWeightKg", F.col("totalRequestedWeightG") / GRAMS_IN_KILOGRAM
+        )
+        .withColumn(
+            "totalLoadedWeightKg", F.col("totalLoadedWeightG") / GRAMS_IN_KILOGRAM
+        )
         .withColumn(
             "loadingAccuracyPerc",
             F.col("loadingAccuracyPercSummed") / F.col("nrOfFeedPerDay"),

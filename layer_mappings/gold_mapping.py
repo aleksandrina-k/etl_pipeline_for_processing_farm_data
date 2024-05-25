@@ -3,12 +3,12 @@ from orchestration.trans_conf import TransConf
 from orchestration.trans_mapping import TransMapping
 from schemas.gold import (
     feed_daily_fact_schema,
-    ration_loading_daily_fact_schema,
+    ration_daily_fact_schema,
     mfr_daily_fact_schema,
 )
 from transformers.gold import (
     feed_daily_fact_transformer,
-    ration_loading_daily_fact_transformer,
+    ration_daily_fact_transformer,
     mfr_daily_fact_transformer,
 )
 
@@ -28,11 +28,11 @@ def gold_mapping():
                 zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD,
             ),
             TransConf(
-                result_table="ration_loading_daily_fact",
-                transformer=ration_loading_daily_fact_transformer,
-                schema_str=ration_loading_daily_fact_schema,
+                result_table="ration_daily_fact",
+                transformer=ration_daily_fact_transformer,
+                schema_str=ration_daily_fact_schema,
                 partition_columns=DEFAULT_PARTITION_COLUMNS_GOLD,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD
+                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD,
             ),
             TransConf(
                 result_table="mfr_daily_fact",

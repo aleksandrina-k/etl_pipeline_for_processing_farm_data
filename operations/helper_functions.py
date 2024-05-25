@@ -94,10 +94,6 @@ def split_carryover_items_factory(
         Returns:
             DataFrame: Dataframe with events split into multiple subevents if they span over the
             window duration.
-
-
-        Example:
-            TODO: add example in/output of transformation
         """
         explode_func = F.posexplode if use_posexplode else F.explode
         alias_fields = ["pos", "boundary"] if use_posexplode else ["boundary"]
