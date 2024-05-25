@@ -1,4 +1,4 @@
-feed_loading_daily_fact_schema = """
+feed_daily_fact_schema = """
     farm_license STRING,
     system_number INTEGER,
     date DATE NOT NULL,

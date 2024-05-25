@@ -26,9 +26,7 @@ class VisualizeFeed(Job):
         # -- Import and clean data
         # get all farms
         farms = extract_all_farm_licenses("../spark-warehouse/bronze/bronze_table")
-        df = self.spark.read.load(
-            "../spark-warehouse/gold/feed_loading_daily_fact"
-        ).toPandas()
+        df = self.spark.read.load("../spark-warehouse/gold/feed_daily_fact").toPandas()
 
         app = Dash(__name__)
 
@@ -51,11 +49,10 @@ class VisualizeFeed(Job):
                 dcc.Dropdown(
                     id="farm_picker",
                     options=[{"label": x, "value": x} for x in farms],
-                    multi=False,
+                    multi=True,
                     value="",
                     style={"width": "40%"},
                 ),
-                # TODO: Maybe add Dropdown menu for feeds
                 dcc.RadioItems(
                     id="kpi_picker",
                     options=KPIS,
@@ -64,7 +61,7 @@ class VisualizeFeed(Job):
                 # dash_table.DataTable(data=df.to_dict("records"), page_size=15),
                 html.Div(id="output_container", children=[]),
                 html.Br(),
-                dcc.Graph(id="feed_loading_daily_fact_map", figure={}),
+                dcc.Graph(id="feed_daily_fact_map", figure={}),
             ]
         )
 
@@ -74,7 +71,7 @@ class VisualizeFeed(Job):
             [
                 Output(component_id="output_container", component_property="children"),
                 Output(
-                    component_id="feed_loading_daily_fact_map",
+                    component_id="feed_daily_fact_map",
                     component_property="figure",
                 ),
             ],
@@ -117,8 +114,11 @@ class VisualizeFeed(Job):
                 data_frame=dff,
                 x="feedName",
                 y=selected_kpi_option,
+                # TODO: give better title
                 title=selected_kpi_option,
+                color="farm_license",
             )
+            fig.update_layout(yaxis_title_text=selected_kpi_option)
 
             return container, fig
 

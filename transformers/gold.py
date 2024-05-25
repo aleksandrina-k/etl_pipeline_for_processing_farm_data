@@ -37,7 +37,7 @@ def _explode_mfr_loading_activity(
     return loading_details
 
 
-def feed_loading_daily_fact_transformer(
+def feed_daily_fact_transformer(
     silver_mfr_loading_activity: DataFrame,
     silver_kitchen_feed_names_dim: DataFrame,
 ) -> DataFrame:
@@ -55,7 +55,7 @@ def feed_loading_daily_fact_transformer(
         & (F.col("f.date") <= F.col("dim.endTime"))
     )
 
-    feed_loading_daily_fact = (
+    feed_daily_fact = (
         feed_exploded.withColumn("date", F.to_date(F.col("startTime"), "MM-dd-yyyy"))
         .groupBy("farm_license", "system_number", "date", "feedId")
         .agg(
@@ -89,7 +89,7 @@ def feed_loading_daily_fact_transformer(
     )
 
     with_kitchen_names = (
-        feed_loading_daily_fact.alias("f")
+        feed_daily_fact.alias("f")
         .join(
             silver_kitchen_feed_names_dim.alias("dim"),
             on=join_condition_dim,
