@@ -8,7 +8,6 @@ from operations.helper_functions import extract_all_farm_licenses
 DEFAULT_START_DATE = date(2021, 1, 1)
 DEFAULT_END_DATE = date(2023, 12, 31)
 KPIS = [
-    "totalDurationH",
     "totalLoadingSpeedKgPerH",
     "totalRequestedWeightKg",
     "totalLoadedWeightKg",

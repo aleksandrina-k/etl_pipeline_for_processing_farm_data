@@ -16,7 +16,6 @@ ration_daily_fact_schema = """
     system_number INTEGER,
     rationId INTEGER,
     date DATE NOT NULL,
-    totalDurationH DOUBLE,
     totalLoadingSpeedKgPerH DOUBLE,
     totalRequestedWeightKg DOUBLE,
     totalLoadedWeightKg DOUBLE,

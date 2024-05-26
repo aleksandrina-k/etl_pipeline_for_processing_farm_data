@@ -137,7 +137,6 @@ def ration_daily_fact_transformer(
     )
 
     columns_with_daily_values = [
-        "totalDurationH",
         "totalLoadingSpeedKgPerH",
         "totalRequestedWeightKg",
         "totalLoadedWeightKg",
@@ -185,7 +184,6 @@ def ration_daily_fact_transformer(
         )
         .groupBy("farm_license", "system_number", "date", "rationId")
         .agg(
-            F.sum(F.col("durationH")).alias("totalDurationH"),
             F.sum("loadingSpeedRationKgPerH").alias("totalLoadingSpeedKgPerH"),
             F.sum("totalRequestedWeightPerLoadKg").alias("totalRequestedWeightKg"),
             F.sum("totalLoadedWeightPerLoadKg").alias("totalLoadedWeightKg"),
