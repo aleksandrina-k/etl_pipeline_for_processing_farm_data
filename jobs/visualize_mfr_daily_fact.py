@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from jobs.job import Job
 import plotly.express as px
-from dash import Dash, dcc, html, Input, Output  # , dash_table
+from dash import Dash, dcc, html, Input, Output
 
 from operations.helper_functions import extract_all_farm_licenses
 
@@ -23,15 +23,11 @@ class VisualizeMfr(Job):
     def launch(self):
         self.logger.info("Starting Visualization With Job Job")
 
-        # -- Import and clean data
-        # get all farms
+        # Import the data
         farms = extract_all_farm_licenses("../spark-warehouse/bronze/bronze_table")
         df = self.spark.read.load("../spark-warehouse/gold/mfr_daily_fact").toPandas()
 
         app = Dash(__name__)
-
-        # ------------------------------------------------------------------------------
-        # App layout
         app.layout = html.Div(
             [
                 html.H1(
@@ -56,7 +52,6 @@ class VisualizeMfr(Job):
                     style={"width": "40%"},
                 ),
                 dcc.RadioItems(id="kpi_picker", options=KPIS, value=KPIS[0]),
-                # dash_table.DataTable(data=df.to_dict("records"), page_size=15),
                 html.Div(id="output_container", children=[]),
                 html.Br(),
                 dcc.Graph(id="mfr_daily_fact_map", figure={}),
@@ -78,36 +73,34 @@ class VisualizeMfr(Job):
             ],
         )
         def update_graph(
-            option_slctd_start_date,
-            option_slctd_end_date,
-            option_slctd_farm,
-            option_slctd_kpi,
+            selected_start_date,
+            selected_end_date,
+            selected_farm,
+            selected_kpi,
         ):
 
-            # container = f"Display {option_slctd_kpi} KPI for {option_slctd_farm} for time period " \
-            #             f"[{option_slctd_start_date} - {option_slctd_end_date}]"
+            # container = f"Display {selected_kpi} KPI for {selected_farm} for time period " \
+            #             f"[{selected_start_date} - {selected_end_date}]"
             container = ""
             dff = df.copy()
 
             # in case only one farm is selected
-            if option_slctd_farm is not None:
-                if isinstance(option_slctd_farm, str):
-                    option_slctd_farm = [option_slctd_farm]
-                dff = dff[dff["farm_license"].isin(option_slctd_farm)]
-            if option_slctd_start_date is not None:
-                start_date = datetime.strptime(
-                    option_slctd_start_date, "%Y-%m-%d"
-                ).date()
+            if selected_farm is not None:
+                if isinstance(selected_farm, str):
+                    selected_farm = [selected_farm]
+                dff = dff[dff["farm_license"].isin(selected_farm)]
+            if selected_start_date is not None:
+                start_date = datetime.strptime(selected_start_date, "%Y-%m-%d").date()
                 dff = dff[dff["date"] >= start_date]
-            if option_slctd_end_date is not None:
-                end_date = datetime.strptime(option_slctd_end_date, "%Y-%m-%d").date()
+            if selected_end_date is not None:
+                end_date = datetime.strptime(selected_end_date, "%Y-%m-%d").date()
                 dff = dff[dff["date"] <= end_date]
-            if option_slctd_kpi is not None:
+            if selected_kpi is not None:
                 dff = (
                     dff.groupby(["farm_license", "system_number", "date"])
                     # the table is already aggregated by the columns above,
                     # so it doesn't matter which agg function we use
-                    [[option_slctd_kpi]].sum()
+                    [[selected_kpi]].sum()
                 )
                 dff.reset_index(inplace=True)
 
@@ -115,11 +108,12 @@ class VisualizeMfr(Job):
             fig = px.line(
                 data_frame=dff,
                 x="date",
-                y=option_slctd_kpi,
+                y=selected_kpi,
                 color="farm_license",
                 markers=True,
-                title=option_slctd_kpi,
+                title=selected_kpi,
             )
+            fig.update_layout(yaxis_title_text=selected_kpi)
 
             return container, fig
 
