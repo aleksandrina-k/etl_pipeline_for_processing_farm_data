@@ -39,6 +39,39 @@ class VisualizeMfr(Job):
         self.kpi_picker_id = kpi_picker_id
         self.kpi_list = kpi_list
 
+    def generate_date_picker_range_component(self) -> dcc.DatePickerRange:
+        return dcc.DatePickerRange(
+            id=self.date_picker_id,
+            min_date_allowed=DEFAULT_START_DATE,
+            max_date_allowed=DEFAULT_END_DATE,
+            start_date=DEFAULT_START_DATE,
+            end_date=DEFAULT_START_DATE,
+            initial_visible_month=date(2023, 1, 1),
+            display_format="YYYY-MM-DD",
+            end_date_placeholder_text="Select a date!",
+        )
+
+    def generate_dropdown_component_with_farms(self, farms: list[str]) -> dcc.Dropdown:
+        return dcc.Dropdown(
+            id=self.farm_picker_id,
+            options=[{"label": x, "value": x} for x in farms],
+            multi=True,
+            value="",
+            style={"width": "40%"},
+        )
+
+    def generate_radio_button_component_with_kpis(self) -> dcc.RadioItems:
+        return dcc.RadioItems(
+            id=self.kpi_picker_id, options=self.kpi_list, value=self.kpi_list[0]
+        )
+
+    def generate_graph(self):
+        return (
+            html.Div(id=self.output_container_id, children=[]),
+            html.Br(),
+            dcc.Graph(id=self.mapper_id, figure={}),
+        )
+
     def launch(self):
         self.logger.info("Starting VisualizeMfr Job")
 
@@ -53,29 +86,10 @@ class VisualizeMfr(Job):
                     "Web Application Dashboards with Dash",
                     style={"text-align": "center"},
                 ),
-                dcc.DatePickerRange(
-                    id=self.date_picker_id,
-                    min_date_allowed=DEFAULT_START_DATE,
-                    max_date_allowed=DEFAULT_END_DATE,
-                    start_date=DEFAULT_START_DATE,
-                    end_date=DEFAULT_START_DATE,
-                    initial_visible_month=date(2023, 1, 1),
-                    display_format="YYYY-MM-DD",
-                    end_date_placeholder_text="Select a date!",
-                ),
-                dcc.Dropdown(
-                    id=self.farm_picker_id,
-                    options=[{"label": x, "value": x} for x in farms],
-                    multi=True,
-                    value="",
-                    style={"width": "40%"},
-                ),
-                dcc.RadioItems(
-                    id=self.kpi_picker_id, options=self.kpi_list, value=self.kpi_list[0]
-                ),
-                html.Div(id=self.output_container_id, children=[]),
-                html.Br(),
-                dcc.Graph(id=self.mapper_id, figure={}),
+                self.generate_date_picker_range_component(),
+                self.generate_dropdown_component_with_farms(farms),
+                self.generate_radio_button_component_with_kpis(),
+                *self.generate_graph(),
             ]
         )
 
