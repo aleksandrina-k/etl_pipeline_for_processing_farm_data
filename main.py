@@ -9,6 +9,7 @@ if __name__ == "__main__":
     # TODO: convert all columns to snake_case
     # TODO: fix the KPIs after grouping. Need to be calculated correctly.
     # TODO: figure out why there are duplicates in the gold layer tables
+    # TODO: consider reading the data from blobs instead of csv files
     config_file_path = r"conf/load_data_from_warehouse.json"
 
     task1 = LoadDataFromWarehouse(config_file_path)

@@ -14,7 +14,6 @@ MFR_KPIS = [
     "nrSchneiderFreqControl",
     "nrCommskFreqControl",
 ]
-
 FEED_KPIS = [
     "loadingAccuracyPerc",
     "totalRequestedWeightKg",
@@ -22,7 +21,6 @@ FEED_KPIS = [
     "avgRequestedWeightKg",
     "avgLoadedWeightKg",
 ]
-
 RATION_KPIS = [
     "totalLoadingSpeedKgPerH",
     "totalRequestedWeightKg",
@@ -92,14 +90,6 @@ class CreateDashboards(Job):
                 html.Div(id="feed_output_container", children=[]),
                 html.Br(),
                 dcc.Graph(id="feed_daily_fact_map", figure={}),
-                ####################################################################
-                html.H4("Select ration KPI:"),
-                dcc.RadioItems(
-                    id="ration_kpi_picker", options=RATION_KPIS, value=RATION_KPIS[0]
-                ),
-                html.Div(id="ration_output_container", children=[]),
-                html.Br(),
-                dcc.Graph(id="ration_daily_fact_map", figure={}),
             ]
         )
 
@@ -126,8 +116,6 @@ class CreateDashboards(Job):
             selected_kpi,
         ):
 
-            # container = f"Display {selected_kpi} KPI for {selected_farm} for time period " \
-            #             f"[{selected_start_date} - {selected_end_date}]"
             container = ""
             dff = mfr_daily_fact_df.copy()
 
@@ -184,9 +172,6 @@ class CreateDashboards(Job):
             selected_farm,
             selected_kpi,
         ):
-
-            # container = f"Display {selected_kpi} KPI for {selected_farm} for time period " \
-            #             f"[{selected_start_date} - {selected_end_date}]"
             container = ""
             dff = feed_daily_fact_df.copy()
 
@@ -223,60 +208,6 @@ class CreateDashboards(Job):
             fig.update_layout(yaxis_title_text=selected_kpi)
 
             return container, fig
-
-        # @app.callback(
-        #     [Output(component_id="ration_output_container", component_property="children"),
-        #      Output(component_id="ration_daily_fact_map", component_property="figure")],
-        #     [Input(component_id="date_picker", component_property="start_date"),
-        #      Input(component_id="date_picker", component_property="end_date"),
-        #      Input(component_id="farm_picker", component_property="value"),
-        #      Input(component_id="ration_kpi_picker", component_property="value")],
-        # )
-        # def update_ration_graph(
-        #         selected_start_date,
-        #         selected_end_date,
-        #         selected_farm,
-        #         selected_kpi,
-        # ):
-        #
-        #     # container = f"Display {selected_kpi} KPI for {selected_farm} for time period " \
-        #     #             f"[{selected_start_date} - {selected_end_date}]"
-        #     container = ""
-        #     dff = ration_daily_fact_df.copy()
-        #
-        #     # in case only one farm is selected
-        #     if selected_farm is not None:
-        #         if isinstance(selected_farm, str):
-        #             selected_farm = [selected_farm]
-        #         dff = dff[dff["farm_license"].isin(selected_farm)]
-        #     if selected_start_date is not None:
-        #         start_date = datetime.strptime(selected_start_date, "%Y-%m-%d").date()
-        #         dff = dff[dff["date"] >= start_date]
-        #     if selected_end_date is not None:
-        #         end_date = datetime.strptime(selected_end_date, "%Y-%m-%d").date()
-        #         dff = dff[dff["date"] <= end_date]
-        #     if selected_kpi is not None:
-        #         dff = (
-        #             dff.groupby(["farm_license", "system_number", "rationName", "date"])
-        #                 # the table is already aggregated by the columns above,
-        #                 # so it doesn't matter which agg function we use
-        #             [[selected_kpi]].sum()
-        #         )
-        #         dff.reset_index(inplace=True)
-        #
-        #     # Plotly Express
-        #     fig = px.line(
-        #         data_frame=dff,
-        #         facet_col="farm_license",
-        #         x="date",
-        #         y=selected_kpi,
-        #         color="rationName",
-        #         markers=True,
-        #         title=selected_kpi,
-        #     )
-        #     fig.update_layout(yaxis_title_text=selected_kpi)
-        #
-        #     return container, fig
 
         app.run_server(debug=True)
 
