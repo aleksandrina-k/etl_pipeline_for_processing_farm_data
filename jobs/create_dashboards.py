@@ -40,7 +40,7 @@ class CreateDashboards(Job):
         self.logger.info("Starting Visualization With Job Job")
 
         # Import the data
-        farms = extract_all_farm_licenses("../spark-warehouse/bronze/bronze_table")
+        farms = extract_all_farm_licenses()
         mfr_daily_fact_df = self.spark.read.load(
             "../spark-warehouse/gold/mfr_daily_fact"
         ).toPandas()
