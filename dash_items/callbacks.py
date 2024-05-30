@@ -64,14 +64,24 @@ def update_mfr_line_chart(
         dff.reset_index(inplace=True)
 
     # Plotly Express
-    fig = px.line(
-        data_frame=dff,
-        x="date",
-        y=selected_kpi,
-        color="farm_license",
-        markers=True,
-        title=selected_kpi,
-    )
+    try:
+        fig = px.line(
+            data_frame=dff,
+            x="date",
+            y=selected_kpi,
+            color="farm_license",
+            markers=True,
+            title=selected_kpi,
+        )
+    except Exception:
+        fig = px.line(
+            data_frame=dff,
+            x="date",
+            y=selected_kpi,
+            color="farm_license",
+            markers=True,
+            title=selected_kpi,
+        )
     fig.update_layout(yaxis_title_text=selected_kpi)
 
     return container, fig
@@ -122,15 +132,26 @@ def update_feed_line_chart(
         dff.reset_index(inplace=True)
 
     # Plotly Express
-    fig = px.line(
-        data_frame=dff,
-        facet_col="farm_license",
-        x="date",
-        y=selected_kpi,
-        color="feedName",
-        markers=True,
-        title=selected_kpi,
-    )
+    try:
+        fig = px.line(
+            data_frame=dff,
+            facet_col="farm_license",
+            x="date",
+            y=selected_kpi,
+            color="feedName",
+            markers=True,
+            title=selected_kpi,
+        )
+    except Exception:
+        fig = px.line(
+            data_frame=dff,
+            facet_col="farm_license",
+            x="date",
+            y=selected_kpi,
+            color="feedName",
+            markers=True,
+            title=selected_kpi,
+        )
     fig.update_layout(yaxis_title_text=selected_kpi)
 
     return container, fig
@@ -181,15 +202,26 @@ def update_ration_line_chart(
         dff.reset_index(inplace=True)
 
     # Plotly Express
-    fig = px.line(
-        data_frame=dff,
-        facet_col="farm_license",
-        x="date",
-        y=selected_kpi,
-        color="rationName",
-        markers=True,
-        title=selected_kpi,
-    )
+    try:
+        fig = px.line(
+            data_frame=dff,
+            facet_col="farm_license",
+            x="date",
+            y=selected_kpi,
+            color="rationName",
+            markers=True,
+            title=selected_kpi,
+        )
+    except Exception:
+        fig = px.line(
+            data_frame=dff,
+            facet_col="farm_license",
+            x="date",
+            y=selected_kpi,
+            color="rationName",
+            markers=True,
+            title=selected_kpi,
+        )
     fig.update_layout(yaxis_title_text=selected_kpi)
 
     return container, fig

@@ -9,25 +9,16 @@ from dash_items.component_generators import (
 from dash_items.component_ids import (
     DATE_PICKER_ID,
     FARM_PICKER_ID,
-    RATION_KPI_PICKER_ID,
-    RATION_CONTAINER_ID,
-    RATION_MAPPER_ID,
+    FEED_CONTAINER_ID,
+    FEED_KPI_PICKER_ID,
+    FEED_MAPPER_ID,
+    FEED_KPIS,
 )
-from dash_items.callbacks import update_ration_line_chart  # noqa: F401
+from dash_items.callbacks import update_feed_line_chart  # noqa: F401
 from operations.helper_functions import extract_all_farm_licenses
 
-RATION_KPIS = [
-    "totalLoadingSpeedKgPerH",
-    "totalRequestedWeightKg",
-    "totalLoadedWeightKg",
-    "avgNrOfFeedInRation",
-    "totalNrOfFeedPerLoad",
-    "totalNrBinsLoaded",
-    "loadingAccuracyPerc",
-]
 
-
-class VisualizeRation(Job):
+class VisualizeFeed(Job):
     def __init__(
         self,
         config_file_path: str,
@@ -37,7 +28,7 @@ class VisualizeRation(Job):
         self.farm_list = extract_all_farm_licenses()
 
     def launch(self):
-        self.logger.info("Starting VisualizeRation Job")
+        self.logger.info("Starting VisualizeFeed Job")
 
         app = Dash(__name__, suppress_callback_exceptions=True)
         app.layout = html.Div(
@@ -49,9 +40,9 @@ class VisualizeRation(Job):
                 generate_date_picker_range_component(DATE_PICKER_ID),
                 generate_dropdown_component_with_farms(FARM_PICKER_ID, self.farm_list),
                 generate_radio_button_component_with_kpis(
-                    RATION_KPI_PICKER_ID, RATION_KPIS
+                    FEED_KPI_PICKER_ID, FEED_KPIS
                 ),
-                *generate_graph(RATION_CONTAINER_ID, RATION_MAPPER_ID),
+                *generate_graph(FEED_CONTAINER_ID, FEED_MAPPER_ID),
             ]
         )
 
@@ -61,5 +52,5 @@ class VisualizeRation(Job):
 if __name__ == "__main__":
     config_file_path = r"../conf/load_data_from_warehouse.json"
 
-    job = VisualizeRation(config_file_path=config_file_path)
+    job = VisualizeFeed(config_file_path=config_file_path)
     job.launch()

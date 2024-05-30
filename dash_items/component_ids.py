@@ -6,13 +6,36 @@ FARM_PICKER_ID = "farm_picker_id"
 MFR_CONTAINER_ID = "mfr_container_id"
 MFR_MAPPER_ID = "mfr_mapper_id"
 MFR_KPI_PICKER_ID = "mfr_kpi_picker_id"
+MFR_KPIS = [
+    "loadingAccuracyPerc",
+    "totalRequestedWeightKg",
+    "totalLoadedWeightKg",
+    "nrSchneiderFreqControl",
+    "nrCommskFreqControl",
+]
 
 # FEED
 FEED_CONTAINER_ID = "feed_container_id"
 FEED_MAPPER_ID = "feed_mapper_id"
 FEED_KPI_PICKER_ID = "feed_kpi_picker_id"
+FEED_KPIS = [
+    "loadingAccuracyPerc",
+    "totalRequestedWeightKg",
+    "totalLoadedWeightKg",
+    "avgRequestedWeightKg",
+    "avgLoadedWeightKg",
+]
 
 # RATION
 RATION_CONTAINER_ID = "ration_container_id"
 RATION_MAPPER_ID = "ration_mapper_id"
 RATION_KPI_PICKER_ID = "ration_kpi_picker_id"
+RATION_KPIS = [
+    "totalLoadingSpeedKgPerH",
+    "totalRequestedWeightKg",
+    "totalLoadedWeightKg",
+    "avgNrOfFeedInRation",
+    "totalNrOfFeedPerLoad",
+    "totalNrBinsLoaded",
+    "loadingAccuracyPerc",
+]
