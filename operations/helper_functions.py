@@ -208,12 +208,12 @@ def perform_transformation(
                 conf.optimize_result_table(spark, result_dir_location)
 
 
-def extract_all_farm_licenses() -> list:
+def extract_all_farm_licenses(farm_table_location: str) -> list:
     """
+    :param farm_table_location: farm table location in the file system
     :return: Sorted list of all farm licenses
     """
     spark = SparkSession.builder.getOrCreate()
-    farm_table_location = r"../spark-warehouse/bronze/bronze_table"
     farms = [
         x[0]
         for x in spark.read.load(farm_table_location)

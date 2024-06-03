@@ -194,7 +194,7 @@ def ration_daily_fact_transformer(
         )
         .withColumn(
             "loadingAccuracyPerc",
-            F.round(F.col("loadingAccuracyPerc") / F.col("totalNrOfFeedPerLoad"), 4),
+            F.round(F.col("loadingAccuracyPerc") / F.col("totalNrOfFeedPerLoad"), 2),
         )
     )
 

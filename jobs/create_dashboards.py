@@ -30,10 +30,10 @@ class CreateDashboards(Job):
     def __init__(self, config_file_path):
         Job.__init__(self, config_file_path)
         self.config = self.common_initialization()
-        self.farm_list = extract_all_farm_licenses()
 
     def launch(self):
         self.logger.info("Starting CreateDashboards Job")
+        farm_list = extract_all_farm_licenses(self.config.get_farm_table_location())
         app = Dash(__name__, suppress_callback_exceptions=True)
         app.layout = html.Div(
             [
@@ -42,7 +42,7 @@ class CreateDashboards(Job):
                     style={"text-align": "center"},
                 ),
                 generate_date_picker_range_component(DATE_PICKER_ID),
-                generate_dropdown_component_with_farms(FARM_PICKER_ID, self.farm_list),
+                generate_dropdown_component_with_farms(FARM_PICKER_ID, farm_list),
                 html.H4("Select MFR KPI:"),
                 generate_radio_button_component_with_kpis(MFR_KPI_PICKER_ID, MFR_KPIS),
                 *generate_graph(MFR_CONTAINER_ID, MFR_MAPPER_ID),
@@ -60,10 +60,3 @@ class CreateDashboards(Job):
         )
 
         app.run_server(debug=True)
-
-
-# if __name__ == "__main__":
-#     config_file_path = r"../conf/load_data_from_warehouse.json"
-#
-#     job = CreateDashboards(config_file_path=config_file_path)
-#     job.launch()

@@ -1,4 +1,3 @@
-# from jobs.create_dashboards import CreateDashboards
 from jobs.create_dashboards import CreateDashboards
 from jobs.load_data_from_warehouse import LoadDataFromWarehouse
 from jobs.process_bronze_to_silver0 import ProcessBronzeToSilver0
@@ -18,10 +17,10 @@ if __name__ == "__main__":
     task2 = ProcessBronzeToSilver0(config_file_path)
     task3 = ProcessSilver0ToSilver1(config_file_path)
     task4 = ProcessSilver1ToGold(config_file_path)
-    vis = CreateDashboards(config_file_path)
+    task5 = CreateDashboards(config_file_path)
 
-    task1.launch()
-    task2.launch()
-    task3.launch()
-    task4.launch()
-    vis.launch()
+    # task1.launch()
+    # task2.launch()
+    # task3.launch()
+    # task4.launch()
+    task5.launch()

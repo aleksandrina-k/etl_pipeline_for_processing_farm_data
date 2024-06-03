@@ -2,6 +2,7 @@ from datetime import datetime
 from dash import callback, Output, Input
 import plotly.express as px
 from pyspark.sql import SparkSession
+from os import path
 from .component_ids import (
     MFR_MAPPER_ID,
     DATE_PICKER_ID,
@@ -38,7 +39,7 @@ def update_mfr_line_chart(
     selected_kpi,
 ):
     spark = SparkSession.builder.getOrCreate()
-    mfr_daily_fact_table_path = "../spark-warehouse/gold/mfr_daily_fact"
+    mfr_daily_fact_table_path = path.abspath("spark-warehouse/gold/mfr_daily_fact")
     container = ""
 
     dff = spark.read.load(mfr_daily_fact_table_path).toPandas()
@@ -106,7 +107,7 @@ def update_feed_line_chart(
     selected_kpi,
 ):
     spark = SparkSession.builder.getOrCreate()
-    feed_daily_fact_table_path = "../spark-warehouse/gold/feed_daily_fact"
+    feed_daily_fact_table_path = path.abspath("spark-warehouse/gold/feed_daily_fact")
     container = ""
 
     dff = spark.read.load(feed_daily_fact_table_path).toPandas()
@@ -176,7 +177,9 @@ def update_ration_line_chart(
     selected_kpi,
 ):
     spark = SparkSession.builder.getOrCreate()
-    ration_daily_fact_table_path = "../spark-warehouse/gold/ration_daily_fact"
+    ration_daily_fact_table_path = path.abspath(
+        "spark-warehouse/gold/ration_daily_fact"
+    )
     container = ""
 
     dff = spark.read.load(ration_daily_fact_table_path).toPandas()

@@ -88,7 +88,7 @@ class ParserConf:
         )
 
         end_time = time.time()
-        time_diff = round((end_time - start_time) / 60, 4)
+        time_diff = round((end_time - start_time) / 60, 2)
         self.logger.info(
             f"Optimized table: {self.result_table} in {time_diff} minutes "
             f"where {where_statement} and zordered by {self.zorder_columns}"

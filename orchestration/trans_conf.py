@@ -121,7 +121,7 @@ class TransConf:
         )
 
         end_time = time.time()
-        time_diff = round((end_time - start_time) / 60, 4)
+        time_diff = round((end_time - start_time) / 60, 2)
         self.logger.info(
             f"Table {self.result_table} is processed." f"It took: {time_diff} minutes"
         )
@@ -140,7 +140,7 @@ class TransConf:
         delta_table.optimize().executeZOrderBy(list(self.zorder_columns))
 
         end_time = time.time()
-        time_diff = round((end_time - start_time) / 60, 4)
+        time_diff = round((end_time - start_time) / 60, 2)
         self.logger.info(
             f"Optimized table: {self.result_table} in {time_diff} minutes "
             f"zordered by {self.zorder_columns}"

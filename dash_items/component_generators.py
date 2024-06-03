@@ -1,7 +1,7 @@
 from datetime import date
 from dash import dcc, html
 
-DEFAULT_START_DATE = date(2021, 1, 1)
+DEFAULT_START_DATE = date(2023, 1, 1)
 DEFAULT_END_DATE = date(2023, 12, 31)
 
 
