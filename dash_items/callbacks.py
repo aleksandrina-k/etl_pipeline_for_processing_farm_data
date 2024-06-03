@@ -125,7 +125,7 @@ def update_feed_line_chart(
         dff = dff[dff["date"] <= end_date]
     if selected_kpi is not None:
         dff = (
-            dff.groupby(["farm_license", "system_number", "feedName", "date"])
+            dff.groupby(["farm_license", "system_number", "feed_name", "date"])
             # the table is already aggregated by the columns above,
             # so it doesn't matter which agg function we use
             [[selected_kpi]].sum()
@@ -139,7 +139,7 @@ def update_feed_line_chart(
             facet_col="farm_license",
             x="date",
             y=selected_kpi,
-            color="feedName",
+            color="feed_name",
             markers=True,
             title=selected_kpi,
         )
@@ -149,7 +149,7 @@ def update_feed_line_chart(
             facet_col="farm_license",
             x="date",
             y=selected_kpi,
-            color="feedName",
+            color="feed_name",
             markers=True,
             title=selected_kpi,
         )
@@ -197,7 +197,7 @@ def update_ration_line_chart(
         dff = dff[dff["date"] <= end_date]
     if selected_kpi is not None:
         dff = (
-            dff.groupby(["farm_license", "system_number", "rationName", "date"])
+            dff.groupby(["farm_license", "system_number", "ration_name", "date"])
             # the table is already aggregated by the columns above,
             # so it doesn't matter which agg function we use
             [[selected_kpi]].sum()
@@ -211,7 +211,7 @@ def update_ration_line_chart(
             facet_col="farm_license",
             x="date",
             y=selected_kpi,
-            color="rationName",
+            color="ration_name",
             markers=True,
             title=selected_kpi,
         )
@@ -221,7 +221,7 @@ def update_ration_line_chart(
             facet_col="farm_license",
             x="date",
             y=selected_kpi,
-            color="rationName",
+            color="ration_name",
             markers=True,
             title=selected_kpi,
         )

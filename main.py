@@ -11,6 +11,7 @@ if __name__ == "__main__":
     # TODO: figure out why there are duplicates in the gold layer tables
     # TODO: consider reading the data from blobs instead of csv files
     # TODO: figure out how to optimize it
+    # TODO: replace feed_daily_fact with the corrected one
     config_file_path = r"conf/load_data_from_warehouse.json"
 
     task1 = LoadDataFromWarehouse(config_file_path)

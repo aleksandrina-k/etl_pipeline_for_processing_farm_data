@@ -34,7 +34,7 @@ def create_dim_table(
         column_names (list): list of columns we want to determine
         start and end time for,
 
-    Returns: A dataframe with "farm_license", "system_number", "startTime", "endTime",
+    Returns: A dataframe with "farm_license", "system_number", "start_time", "end_time",
     and all specified columns we used to determine the start and end time for.
     """
     farm_window = Window.partitionBy(*partition_columns).orderBy(orderby_col)
@@ -43,22 +43,23 @@ def create_dim_table(
         df
         # # Only keep information of interest
         # .select(*partition_columns, orderby_col, *column_names)
-        .withColumn("dataCondensed", F.concat_ws(", ", *column_names))
+        .withColumn("data_condensed", F.concat_ws(", ", *column_names))
         .withColumn(
             "changed",
-            F.col("dataCondensed") != F.lag("dataCondensed").over(farm_window),
+            F.col("data_condensed") != F.lag("data_condensed").over(farm_window),
         )
         .filter(F.col("changed").isNull() | F.col("changed"))
         # when there is no end date, use the end date time thing
         .withColumn(
-            "endTime",
+            "end_time",
             F.lead(orderby_col, default=max_datetime).over(farm_window),
         )
-        .withColumnRenamed("time", "startTime")
+        .withColumnRenamed("time", "start_time")
         .withColumn(
-            "durationS", F.col("endTime").cast("long") - F.col("startTime").cast("long")
+            "duration_s",
+            F.col("end_time").cast("long") - F.col("start_time").cast("long"),
         )
-        .drop("dataCondensed", "changed")
+        .drop("data_condensed", "changed")
     )
     return dim_table
 
@@ -104,8 +105,8 @@ def split_carryover_items_factory(
             input_df.withColumn("id", F.monotonically_increasing_id())
             .withColumn("window", F.window(event_start_time_column, window_duration))
             # Extact the window start and end from the window into columns
-            .withColumn("windowStart", F.col("window.start"))
-            .withColumn("windowEnd", F.col("window.end"))
+            .withColumn("window_start", F.col("window.start"))
+            .withColumn("window_end", F.col("window.end"))
             .drop(F.col("window"))
             .select(
                 "*",
@@ -113,40 +114,40 @@ def split_carryover_items_factory(
                 # start and end
                 explode_func(
                     F.sequence(
-                        "windowStart",
-                        F.coalesce(event_end_time_column, "windowEnd"),
+                        "window_start",
+                        F.coalesce(event_end_time_column, "window_end"),
                         F.expr(f"interval {window_duration}"),
                     )
                 ).alias(*alias_fields),
             )
             .withColumn(
-                "windowedStartTime",
+                "windowed_start_time",
                 F.greatest(F.col(event_start_time_column), F.col("boundary")),
             )
-            .withColumn("endTimeCutoff", F.lag(F.col("boundary"), -1).over(id_window))
+            .withColumn("end_time_cutoff", F.lag(F.col("boundary"), -1).over(id_window))
             .withColumn(
-                "windowedEndTime",
-                F.coalesce("endTimeCutoff", event_end_time_column),
+                "windowed_end_time",
+                F.coalesce("end_time_cutoff", event_end_time_column),
             )
-            .where(F.col("windowedEndTime").isNotNull())
+            .where(F.col("windowed_end_time").isNotNull())
             .withColumn(
-                "windowedEndTime",
+                "windowed_end_time",
                 F.when(F.col(event_end_time_column).isNull(), None).otherwise(
-                    F.col("windowedEndTime")
+                    F.col("windowed_end_time")
                 ),
             )
             .drop(event_start_time_column, event_end_time_column)
-            .withColumnRenamed("windowedStartTime", event_start_time_column)
-            .withColumnRenamed("windowedEndTime", event_end_time_column)
+            .withColumnRenamed("windowed_start_time", event_start_time_column)
+            .withColumnRenamed("windowed_end_time", event_end_time_column)
             .withColumn(
                 "_duration",
                 F.col(event_end_time_column).cast("long")
                 - F.col(event_start_time_column).cast("long"),
             )
-            .withColumn("startDate", F.to_date(F.col(event_start_time_column)))
-            .withColumn("endDate", F.to_date(F.col(event_end_time_column)))
+            .withColumn("start_date", F.to_date(F.col(event_start_time_column)))
+            .withColumn("end_date", F.to_date(F.col(event_end_time_column)))
             .where((F.col("_duration") > 0) | (F.col(event_end_time_column).isNull()))
-            .select(*input_df.columns, "startDate", "endDate", *alias_fields)
+            .select(*input_df.columns, "start_date", "end_date", *alias_fields)
             .drop("boundary")
         )
         return output

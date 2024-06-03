@@ -12,7 +12,7 @@ def silver_mfr_loading_activity_transformer(
         mfr_load_done_result: The mfr_load_done_results
     Returns:
         A DataFrame with mfr_loading activities with start and end time and a uuid in
-        loadingUuid
+        loading_uuid
     Note:
         Sequence numbers are not unique and can be reused by the system. The same sequence
         number can thus occur on multiple days. As a result, joining on the conditions
@@ -26,11 +26,11 @@ def silver_mfr_loading_activity_transformer(
         (F.col("start.farm_license") == F.col("end.farm_license"))
         & (F.col("start.system_number") == F.col("end.system_number"))
         & (F.col("start.dev_number") == F.col("end.dev_number"))
-        & (F.col("start.rationId") == F.col("end.rationId"))
-        & (F.col("start.seqNr") == F.col("end.seqNr"))
-        & (F.col("start.startTime") < F.col("end.endTime"))
+        & (F.col("start.ration_id") == F.col("end.ration_id"))
+        & (F.col("start.seq_nr") == F.col("end.seq_nr"))
+        & (F.col("start.start_time") < F.col("end.end_time"))
         & (
-            F.col("end.endTime").cast("long") - F.col("start.startTime").cast("long")
+            F.col("end.end_time").cast("long") - F.col("start.start_time").cast("long")
             < 12 * 3600
         )
     )
@@ -42,15 +42,15 @@ def silver_mfr_loading_activity_transformer(
             "dev_number",
             "time",
             "year_month",
-            "rationId",
-            "reqWeight",
-            "startWeight",
-            "seqNr",
+            "ration_id",
+            "req_weight",
+            "start_weight",
+            "seq_nr",
         )
-        .withColumnRenamed("time", "startTime")
-        .withColumnRenamed("reqWeight", "reqWeightRationG")
-        .withColumnRenamed("startWeight", "weightAtLoadStartG")
-        .withColumn("loadingUuid", uuid_udf())
+        .withColumnRenamed("time", "start_time")
+        .withColumnRenamed("req_weight", "req_weight_ration_g")
+        .withColumnRenamed("start_weight", "weight_at_load_start_g")
+        .withColumn("loading_uuid", uuid_udf())
     )
 
     end_for_join = (
@@ -59,20 +59,20 @@ def silver_mfr_loading_activity_transformer(
             "system_number",
             "dev_number",
             "time",
-            "rationId",
-            "totalWeight",
-            "seqNr",
+            "ration_id",
+            "total_weight",
+            "seq_nr",
             "results",
         )
-        .withColumnRenamed("time", "endTime")
-        .withColumnRenamed("totalWeight", "loadedWeightRationG")
+        .withColumnRenamed("time", "end_time")
+        .withColumnRenamed("total_weight", "loaded_weight_ration_g")
     )
 
     mfr_loading_activity = (
         start_for_join.alias("start")
-        .withWatermark("startTime", "12 HOURS")
+        .withWatermark("start_time", "12 HOURS")
         .join(
-            end_for_join.alias("end").withWatermark("endTime", "12 HOURS"),
+            end_for_join.alias("end").withWatermark("end_time", "12 HOURS"),
             on=join_condition,
             how="left",
         )
@@ -80,22 +80,24 @@ def silver_mfr_loading_activity_transformer(
             "start.farm_license",
             "start.system_number",
             "start.dev_number",
-            "start.rationId",
-            "start.seqNr",
+            "start.ration_id",
+            "start.seq_nr",
             "start.year_month",
-            "loadingUuid",
-            "startTime",
-            "endTime",
-            "reqWeightRationG",
-            "weightAtLoadStartG",
-            "loadedWeightRationG",
+            "loading_uuid",
+            "start_time",
+            "end_time",
+            "req_weight_ration_g",
+            "weight_at_load_start_g",
+            "loaded_weight_ration_g",
             "results",
         )
         .withColumn(
-            "durationS", F.col("endTime").cast("long") - F.col("startTime").cast("long")
+            "duration_s",
+            F.col("end_time").cast("long") - F.col("start_time").cast("long"),
         )
         .withColumn(
-            "loadingSpeedRationGPerS", F.col("loadedWeightRationG") / F.col("durationS")
+            "loading_speed_ration_g_per_s",
+            F.col("loaded_weight_ration_g") / F.col("duration_s"),
         )
     )
 
@@ -110,7 +112,7 @@ def silver_mfr_config_dim_transformer(mfr_config) -> DataFrame:
         mfr_config: DataFrame with mfr_config data
     Returns:
         DataFrame with all new configurations per device, start and end time and
-        a uuid in mfrConfigUuid
+        a uuid in mfr_config_uuid
     """
 
     mfr_config = (
@@ -119,27 +121,27 @@ def silver_mfr_config_dim_transformer(mfr_config) -> DataFrame:
         .drop("dev_type", "msg_type", "processing_time", "data")
         # sometimes there are messages from other devices due to a mismatch between SW versions
         .filter(F.col("dev_type") == "MFR")
-        # remove UNKNOWN relaysType, since they don't give information about MFR type
-        .filter(F.col("relaysType") != "UNKNOWN")
+        # remove UNKNOWN relays_type, since they don't give information about MFR type
+        .filter(F.col("relays_type") != "UNKNOWN")
     )
 
     mfr_config_dim = create_dim_table(
         mfr_config,
         partition_columns=["farm_license", "system_number", "dev_number"],
-        column_names=["freqTypeMixer", "freqTypeRoller", "relaysType", "phases"],
+        column_names=["freq_type_mixer", "freq_type_roller", "relays_type", "phases"],
     )
 
     return (
-        mfr_config_dim.withColumn("mfrConfigUuid", uuid_udf())
+        mfr_config_dim.withColumn("mfr_config_uuid", uuid_udf())
         # Rename columns
-        .withColumnRenamed("freqTypeMixer", "freqControllerTypeMixer")
-        .withColumnRenamed("freqTypeRoller", "freqControllerTypeDosingRoller")
-        .withColumnRenamed("relaysType", "relaysType")
+        .withColumnRenamed("freq_type_mixer", "freq_controller_type_mixer")
+        .withColumnRenamed("freq_type_roller", "freq_controller_type_dosing_roller")
+        .withColumnRenamed("relays_type", "relays_type")
         .replace(to_replace={"THREE_PHASE": "3", "ONE_PHASE": "1"}, subset="phases")
         .withColumn(
             "mfr_type",
-            F.when(F.col("relaysType") == "EM773", "M1")
-            .when(F.col("relaysType") == "SCHNEIDER", "M2")
+            F.when(F.col("relays_type") == "EM773", "M1")
+            .when(F.col("relays_type") == "SCHNEIDER", "M2")
             .otherwise("M3"),
         )
     )
@@ -157,13 +159,13 @@ def silver_kitchen_feed_names_dim_transformer(t4c_kitchen_feed_names) -> DataFra
         t4c_kitchen_feed_names
         # drop unused columns
         .drop("dev_number", "dev_type", "msg_type", "processing_time", "data")
-        # removing feedId == 0, because they don't bring any value
-        .filter(F.col("feedId") != 0)
+        # removing feed_id == 0, because they don't bring any value
+        .filter(F.col("feed_id") != 0)
     )
 
     return create_dim_table(
         feed_names,
-        partition_columns=["farm_license", "system_number", "feedId"],
+        partition_columns=["farm_license", "system_number", "feed_id"],
         column_names=["name"],
     )
 
@@ -180,12 +182,12 @@ def silver_ration_names_dim_transformer(t4c_ration_names) -> DataFrame:
         t4c_ration_names
         # drop unused columns
         .drop("dev_number", "dev_type", "msg_type", "processing_time", "data")
-        # removing rationId == 0, because they don't bring any value
-        .filter(F.col("rationId") != 0)
+        # removing ration_id == 0, because they don't bring any value
+        .filter(F.col("ration_id") != 0)
     )
 
     return create_dim_table(
         ration_names,
-        partition_columns=["farm_license", "system_number", "rationId"],
+        partition_columns=["farm_license", "system_number", "ration_id"],
         column_names=["name"],
     )
