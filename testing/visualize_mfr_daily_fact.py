@@ -47,8 +47,8 @@ class VisualizeMfr(Job):
         app.run_server(debug=True)
 
 
-if __name__ == "__main__":
-    config_file_path = r"../conf/load_data_from_warehouse.json"
-
-    job = VisualizeMfr(config_file_path=config_file_path)
-    job.launch()
+# if __name__ == "__main__":
+#     config_file_path = r"../conf/load_data_from_warehouse.json"
+#
+#     job = VisualizeMfr(config_file_path=config_file_path)
+#     job.launch()
