@@ -1,6 +1,5 @@
 feed_daily_fact_schema = """
     farm_license STRING,
-    system_number INTEGER,
     feed_id INTEGER,
     date DATE NOT NULL,
     nr_times_loaded LONG,
@@ -13,7 +12,6 @@ feed_daily_fact_schema = """
 
 ration_daily_fact_schema = """
     farm_license STRING,
-    system_number INTEGER,
     ration_id INTEGER,
     date DATE NOT NULL,
     total_loading_speed_kg_per_h DOUBLE,
@@ -28,7 +26,6 @@ ration_daily_fact_schema = """
 
 mfr_daily_fact_schema = """
     farm_license STRING,
-    system_number INTEGER,
     date DATE NOT NULL,
     total_requested_weight_kg DOUBLE,
     total_loaded_weight_kg DOUBLE,

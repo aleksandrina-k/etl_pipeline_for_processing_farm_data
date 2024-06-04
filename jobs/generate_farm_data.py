@@ -33,7 +33,7 @@ class GenerateFarmData(Job):
             self.spark,
             farm_info_df,
             table_location=table_location,
-            match_columns={"farm_license", "system_number"},
+            match_columns={"farm_license"},
         )
 
         df_after_merge = self.spark.read.load(table_location)

@@ -26,9 +26,8 @@ class ParserConf:
 
     DEFAULT_MATCH_COLUMNS = {
         "farm_license",
-        "system_number",
-        "dev_type",
-        "dev_number",
+        "device_type",
+        "device_number",
         "time",
     }
     DEFAULT_ZORDER_COLUMNS = {"farm_license"}

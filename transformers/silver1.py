@@ -24,8 +24,7 @@ def silver_mfr_loading_activity_transformer(
 
     join_condition = (
         (F.col("start.farm_license") == F.col("end.farm_license"))
-        & (F.col("start.system_number") == F.col("end.system_number"))
-        & (F.col("start.dev_number") == F.col("end.dev_number"))
+        & (F.col("start.device_number") == F.col("end.device_number"))
         & (F.col("start.ration_id") == F.col("end.ration_id"))
         & (F.col("start.seq_nr") == F.col("end.seq_nr"))
         & (F.col("start.start_time") < F.col("end.end_time"))
@@ -38,8 +37,7 @@ def silver_mfr_loading_activity_transformer(
     start_for_join = (
         mfr_load_start.select(
             "farm_license",
-            "system_number",
-            "dev_number",
+            "device_number",
             "time",
             "year_month",
             "ration_id",
@@ -56,8 +54,7 @@ def silver_mfr_loading_activity_transformer(
     end_for_join = (
         mfr_load_done_result.select(
             "farm_license",
-            "system_number",
-            "dev_number",
+            "device_number",
             "time",
             "ration_id",
             "total_weight",
@@ -78,8 +75,7 @@ def silver_mfr_loading_activity_transformer(
         )
         .select(
             "start.farm_license",
-            "start.system_number",
-            "start.dev_number",
+            "start.device_number",
             "start.ration_id",
             "start.seq_nr",
             "start.year_month",
@@ -118,16 +114,16 @@ def silver_mfr_config_dim_transformer(mfr_config) -> DataFrame:
     mfr_config = (
         mfr_config
         # drop unused columns
-        .drop("dev_type", "msg_type", "processing_time", "data")
+        .drop("device_type", "msg_type", "processing_time", "data")
         # sometimes there are messages from other devices due to a mismatch between SW versions
-        .filter(F.col("dev_type") == "MFR")
+        .filter(F.col("device_type") == "MFR")
         # remove UNKNOWN relays_type, since they don't give information about MFR type
         .filter(F.col("relays_type") != "UNKNOWN")
     )
 
     mfr_config_dim = create_dim_table(
         mfr_config,
-        partition_columns=["farm_license", "system_number", "dev_number"],
+        partition_columns=["farm_license", "device_number"],
         column_names=["freq_type_mixer", "freq_type_roller", "relays_type", "phases"],
     )
 
@@ -178,12 +174,12 @@ def silver_kitchen_feed_names_dim_transformer(t4c_kitchen_feed_names) -> DataFra
             ).otherwise(F.col("encoded_name")),
         ).drop("encoded_name")
         # drop unused columns
-        .drop("dev_number", "dev_type", "msg_type", "processing_time", "data")
+        .drop("device_number", "device_type", "msg_type", "processing_time", "data")
     )
 
     return create_dim_table(
         feed_names,
-        partition_columns=["farm_license", "system_number", "feed_id"],
+        partition_columns=["farm_license", "feed_id"],
         column_names=["name"],
     )
 
@@ -220,11 +216,11 @@ def silver_ration_names_dim_transformer(t4c_ration_names) -> DataFrame:
         ).drop("encoded_name")
         # drop unused columns
         # drop unused columns
-        .drop("dev_number", "dev_type", "msg_type", "processing_time", "data")
+        .drop("device_number", "device_type", "msg_type", "processing_time", "data")
     )
 
     return create_dim_table(
         ration_names,
-        partition_columns=["farm_license", "system_number", "ration_id"],
+        partition_columns=["farm_license", "ration_id"],
         column_names=["name"],
     )

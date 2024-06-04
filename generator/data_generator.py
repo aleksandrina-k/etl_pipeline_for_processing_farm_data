@@ -29,7 +29,7 @@ class Farm:
 
     def __init__(self):
         self.farm_license = self.generate_farm_license()
-        self.system_number = self.generate_system_number()
+        # self.system_number = self.generate_system_number()
         self.country = self.generate_country()
         self.city = self.generate_city()
         self.creation_timestamp = self.generate_creation_timestamp()

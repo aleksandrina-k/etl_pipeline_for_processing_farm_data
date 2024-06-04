@@ -34,7 +34,7 @@ def create_dim_table(
         column_names (list): list of columns we want to determine
         start and end time for,
 
-    Returns: A dataframe with "farm_license", "system_number", "start_time", "end_time",
+    Returns: A dataframe with "farm_license", "start_time", "end_time",
     and all specified columns we used to determine the start and end time for.
     """
     farm_window = Window.partitionBy(*partition_columns).orderBy(orderby_col)

@@ -1,7 +1,6 @@
 silver_mfr_loading_activity_schema = """
     farm_license STRING,
-    system_number INTEGER,
-    dev_number INTEGER,
+    device_number INTEGER,
     ration_id INTEGER,
     seq_nr INTEGER,
     year_month STRING,
@@ -23,8 +22,7 @@ silver_mfr_loading_activity_schema = """
 
 silver_mfr_config_dim_schema = """
     farm_license STRING,
-    system_number INTEGER,
-    dev_number INTEGER,
+    device_number INTEGER,
     start_time TIMESTAMP,
     phases STRING,
     freq_controller_type_mixer STRING,
@@ -39,7 +37,6 @@ silver_mfr_config_dim_schema = """
 
 silver_kitchen_feed_names_dim_schema = """
     farm_license STRING,
-    system_number INT,
     start_time TIMESTAMP,
     feed_id INTEGER,
     name STRING,
@@ -50,7 +47,6 @@ silver_kitchen_feed_names_dim_schema = """
 
 silver_ration_names_dim_schema = """
     farm_license STRING,
-    system_number INT,
     start_time TIMESTAMP,
     ration_id INTEGER,
     name STRING,

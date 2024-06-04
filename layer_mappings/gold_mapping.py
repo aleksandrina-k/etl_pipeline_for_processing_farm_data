@@ -12,7 +12,7 @@ from transformers.gold import (
     mfr_daily_fact_transformer,
 )
 
-DEFAULT_PARTITION_COLUMNS_GOLD = {"farm_license", "system_number"}
+DEFAULT_PARTITION_COLUMNS_GOLD = {"farm_license"}
 DEFAULT_ZORDER_COLUMNS_GOLD = {"date"}
 
 

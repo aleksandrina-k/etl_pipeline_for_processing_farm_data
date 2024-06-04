@@ -47,9 +47,7 @@ def feed_daily_fact_transformer(
 ) -> DataFrame:
 
     feed_exploded = _explode_mfr_loading_activity(silver_mfr_loading_activity)
-    feed_window = Window.partitionBy(
-        "farm_license", "system_number", "feed_id"
-    ).orderBy("date")
+    feed_window = Window.partitionBy("farm_license", "feed_id").orderBy("date")
 
     add_missing_days_func = split_carryover_items_factory(
         "date", "next_date", use_posexplode=True
@@ -65,7 +63,6 @@ def feed_daily_fact_transformer(
 
     join_condition_dim = (
         (F.col("fact.farm_license") == F.col("dim.farm_license"))
-        & (F.col("fact.system_number") == F.col("dim.system_number"))
         & (F.col("fact.date") >= F.col("dim.start_time"))
         & (F.col("fact.date") < F.col("dim.end_time"))
     )
@@ -74,7 +71,7 @@ def feed_daily_fact_transformer(
         feed_exploded.withColumn("date", F.to_date(F.col("start_time")))
         .where(F.col("loading_speed_ration_g_per_s") > 0)
         .where(F.col("duration_s") > 1)
-        .groupBy("farm_license", "system_number", "date", "feed_id")
+        .groupBy("farm_license", "date", "feed_id")
         .agg(
             F.count("farm_license").alias("nr_times_loaded"),
             F.sum(F.col("req_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
@@ -117,11 +114,10 @@ def feed_daily_fact_transformer(
                 "next_date", F.lead(F.col("date")).over(feed_window)
             ),
             "1 days",
-            ["farm_license", "system_number", "feed_id"],
+            ["farm_license", "feed_id"],
         )
         .select(
             "farm_license",
-            "system_number",
             "feed_id",
             "date",
             *[
@@ -144,13 +140,10 @@ def ration_daily_fact_transformer(
 
     feed_exploded = _explode_mfr_loading_activity(silver_mfr_loading_activity)
 
-    ration_window_date = Window.partitionBy(
-        "farm_license", "system_number", "ration_id"
-    ).orderBy("date")
+    ration_window_date = Window.partitionBy("farm_license", "ration_id").orderBy("date")
 
     join_condition_dim = (
         (F.col("r.farm_license") == F.col("dim.farm_license"))
-        & (F.col("r.system_number") == F.col("dim.system_number"))
         & (F.col("r.ration_id") == F.col("dim.ration_id"))
         & (F.col("r.date") > F.col("dim.start_time"))
         & (F.col("r.date") <= F.col("dim.end_time"))
@@ -176,7 +169,7 @@ def ration_daily_fact_transformer(
             (F.col("loaded_weight_ration_g") > 0)
             & (F.col("loaded_weight_ration_g") < 1200000)
         )
-        .groupBy("farm_license", "system_number", "date", "loading_uuid")
+        .groupBy("farm_license", "date", "loading_uuid")
         # The table has a row per feed, but also contains ration general information
         # Hence, we aggregate (sum/avg) the feed specific info but take first of the
         # ration specific information (after all it will be the same for all rows).
@@ -202,7 +195,7 @@ def ration_daily_fact_transformer(
             F.count("feed_id").alias("nr_of_feed_per_load"),
             F.countDistinct("loading_uuid").alias("bins_loaded"),
         )
-        .groupBy("farm_license", "system_number", "date", "ration_id")
+        .groupBy("farm_license", "date", "ration_id")
         .agg(
             F.sum("loading_speed_ration_kg_per_h").alias(
                 "total_loading_speed_kg_per_h"
@@ -243,10 +236,9 @@ def ration_daily_fact_transformer(
             "next_date", F.lead(F.col("date")).over(ration_window_date)
         ),
         "1 days",
-        ["farm_license", "system_number", "ration_id"],
+        ["farm_license", "ration_id"],
     ).select(
         "farm_license",
-        "system_number",
         "ration_id",
         F.col("date").cast("date"),
         *[
@@ -266,11 +258,10 @@ def mfr_daily_fact_transformer(
     MFR1_DEV_LDN = [71, 118]
     MFR2_DEV_LDN = [72, 119]
 
-    mfr_window = Window.partitionBy("farm_license", "system_number").orderBy("date")
+    mfr_window = Window.partitionBy("farm_license").orderBy("date")
 
     join_condition_dim = (
         (F.col("f.farm_license") == F.col("dim.farm_license"))
-        & (F.col("f.system_number") == F.col("dim.system_number"))
         & (F.col("f.date") > F.col("dim.start_time"))
         & (F.col("f.date") <= F.col("dim.end_time"))
     )
@@ -280,7 +271,7 @@ def mfr_daily_fact_transformer(
     # aggregating daily loading facts per vector system
     vector_daily = (
         feed_exploded.withColumn("date", F.to_date(F.col("start_time")))
-        .groupBy("farm_license", "system_number", "date", "dev_number", "loading_uuid")
+        .groupBy("farm_license", "date", "device_number", "loading_uuid")
         .agg(
             F.sum("req_weight_feedtype_g").alias("req_weight_per_load_g_summed"),
             F.sum("loaded_weight_feedtype_g").alias("loaded_weight_per_load_g_summed"),
@@ -293,7 +284,7 @@ def mfr_daily_fact_transformer(
             ).alias("loading_accuracy_percentage_summed"),
             F.count("feed_id").alias("nr_of_feed_per_load"),
         )
-        .groupBy("farm_license", "system_number", "date")
+        .groupBy("farm_license", "date")
         .agg(
             F.sum("req_weight_per_load_g_summed").alias("total_requested_weight_g"),
             F.sum("loaded_weight_per_load_g_summed").alias("total_loaded_weight_g"),
@@ -324,7 +315,7 @@ def mfr_daily_fact_transformer(
 
     silver_mfr_config_unique_ss = create_dim_table(
         silver_mfr_config_dim,
-        partition_columns=["farm_license", "system_number", "dev_number"],
+        partition_columns=["farm_license", "device_number"],
         column_names=[
             "freq_controller_type_mixer",
             "freq_controller_type_dosing_roller",
@@ -348,8 +339,12 @@ def mfr_daily_fact_transformer(
         )
     )
 
-    mfr1_config_count = mfr_config_count.filter(F.col("dev_number").isin(MFR1_DEV_LDN))
-    mfr2_config_count = mfr_config_count.filter(F.col("dev_number").isin(MFR2_DEV_LDN))
+    mfr1_config_count = mfr_config_count.filter(
+        F.col("device_number").isin(MFR1_DEV_LDN)
+    )
+    mfr2_config_count = mfr_config_count.filter(
+        F.col("device_number").isin(MFR2_DEV_LDN)
+    )
 
     vector_daily_fact = (
         vector_daily.alias("f")
@@ -408,9 +403,7 @@ def mfr_daily_fact_transformer(
     )
 
     with_missing_days = (
-        add_missing_days_func(
-            vector_daily_fact, "1 days", ["farm_license", "system_number"]
-        )
+        add_missing_days_func(vector_daily_fact, "1 days", ["farm_license"])
         .drop("next_date", "start_date", "end_date", "pos")
         .withColumn("date", F.to_date("date"))
     )

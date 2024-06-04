@@ -1,8 +1,7 @@
 BASE_COLUMNS = """
     farm_license STRING,
-    system_number INTEGER,
-    dev_type STRING,
-    dev_number INTEGER,
+    device_type STRING,
+    device_number INTEGER,
     msg_type STRING,
     time TIMESTAMP,
     data STRING,
