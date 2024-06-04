@@ -156,11 +156,29 @@ def silver_kitchen_feed_names_dim_transformer(t4c_kitchen_feed_names) -> DataFra
     """
 
     feed_names = (
-        t4c_kitchen_feed_names
+        # removing feed_id == 0, because they don't bring any value
+        t4c_kitchen_feed_names.filter(F.col("feed_id") != 0)
+        # fix wrongly encoded strings
+        .withColumn(
+            "encoded_name", F.decode(F.encode(F.col("name"), "ISO-8859-1"), "utf-8")
+        )
+        # if the name contains '�' or '?' after encode and decoding,
+        # then the name was correct in the first place
+        # there are names that originally contain '?',
+        # we need to make sure that the '?' is a result of decoding
+        .withColumn(
+            "name",
+            F.when(
+                (F.col("encoded_name").contains("�"))
+                | (
+                    ~(F.col("name").contains("?"))
+                    & (F.col("encoded_name").contains("?"))
+                ),
+                F.col("name"),
+            ).otherwise(F.col("encoded_name")),
+        ).drop("encoded_name")
         # drop unused columns
         .drop("dev_number", "dev_type", "msg_type", "processing_time", "data")
-        # removing feed_id == 0, because they don't bring any value
-        .filter(F.col("feed_id") != 0)
     )
 
     return create_dim_table(
@@ -179,11 +197,30 @@ def silver_ration_names_dim_transformer(t4c_ration_names) -> DataFrame:
     """
 
     ration_names = (
-        t4c_ration_names
+        # removing ration_id == 0, because they don't bring any value
+        t4c_ration_names.filter(F.col("ration_id") != 0)
+        # fix wrongly encoded strings
+        .withColumn(
+            "encoded_name", F.decode(F.encode(F.col("name"), "ISO-8859-1"), "utf-8")
+        )
+        # if the name contains '�' or '?' after encode and decoding,
+        # then the name was correct in the first place
+        # there are names that originally contain '?',
+        # we need to make sure that the '?' is a result of decoding
+        .withColumn(
+            "name",
+            F.when(
+                (F.col("encoded_name").contains("�"))
+                | (
+                    ~(F.col("name").contains("?"))
+                    & (F.col("encoded_name").contains("?"))
+                ),
+                F.col("name"),
+            ).otherwise(F.col("encoded_name")),
+        ).drop("encoded_name")
+        # drop unused columns
         # drop unused columns
         .drop("dev_number", "dev_type", "msg_type", "processing_time", "data")
-        # removing ration_id == 0, because they don't bring any value
-        .filter(F.col("ration_id") != 0)
     )
 
     return create_dim_table(
