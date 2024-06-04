@@ -47,77 +47,91 @@ def feed_daily_fact_transformer(
 ) -> DataFrame:
 
     feed_exploded = _explode_mfr_loading_activity(silver_mfr_loading_activity)
-
     feed_window = Window.partitionBy(
         "farm_license", "system_number", "feed_id"
     ).orderBy("date")
-    join_condition_dim = (
-        (F.col("f.farm_license") == F.col("dim.farm_license"))
-        & (F.col("f.system_number") == F.col("dim.system_number"))
-        & (F.col("f.feed_id") == F.col("dim.feed_id"))
-        & (F.col("f.date") > F.col("dim.start_time"))
-        & (F.col("f.date") <= F.col("dim.end_time"))
-    )
-
-    feed_daily_fact = (
-        feed_exploded.withColumn("date", F.to_date(F.col("start_time"), "MM-dd-yyyy"))
-        .groupBy("farm_license", "system_number", "date", "feed_id")
-        .agg(
-            F.sum("req_weight_feedtype_g").alias("total_requested_weight_g"),
-            F.sum("loaded_weight_feedtype_g").alias("total_loaded_weight_g"),
-            F.avg("req_weight_feedtype_g").alias("avg_requested_weight_g"),
-            F.avg("loaded_weight_feedtype_g").alias("avg_loaded_weight_g"),
-            # if loading accuracy perc is <= 0 we set its accuracy to 0
-            # it will be included in the calculation
-            F.avg(
-                F.when(F.col("loading_accuracy_percentage") <= 0, 0).otherwise(
-                    F.col("loading_accuracy_percentage")
-                )
-            ).alias("loading_accuracy_perc"),
-        )
-        .withColumn(
-            "total_requested_weight_kg",
-            F.col("total_requested_weight_g") / GRAMS_IN_KILOGRAM,
-        )
-        .withColumn(
-            "total_loaded_weight_kg", F.col("total_loaded_weight_g") / GRAMS_IN_KILOGRAM
-        )
-        .withColumn(
-            "avg_requested_weight_kg",
-            F.col("avg_requested_weight_g") / GRAMS_IN_KILOGRAM,
-        )
-        .withColumn(
-            "avg_loaded_weight_kg", F.col("avg_loaded_weight_g") / GRAMS_IN_KILOGRAM
-        )
-        .withColumn("next_date", F.lead(F.col("date")).over(feed_window))
-        .drop(
-            "total_requested_weight_g",
-            "total_loaded_weight_g",
-            "avg_requested_weight_g",
-            "avg_loaded_weight_g",
-        )
-    )
 
     add_missing_days_func = split_carryover_items_factory(
         "date", "next_date", use_posexplode=True
     )
 
+    columns_with_daily_values = [
+        "nr_times_loaded",
+        "requested_weight_kg",
+        "loaded_weight_kg",
+        "avg_loading_deviation_kg",
+        "loading_accuracy_perc",
+    ]
+
+    join_condition_dim = (
+        (F.col("fact.farm_license") == F.col("dim.farm_license"))
+        & (F.col("fact.system_number") == F.col("dim.system_number"))
+        & (F.col("fact.date") >= F.col("dim.start_time"))
+        & (F.col("fact.date") < F.col("dim.end_time"))
+    )
+
+    feed_daily_fact = (
+        feed_exploded.withColumn("date", F.to_date(F.col("start_time")))
+        .where(F.col("loading_speed_ration_g_per_s") > 0)
+        .where(F.col("duration_s") > 1)
+        .groupBy("farm_license", "system_number", "date", "feed_id")
+        .agg(
+            F.count("farm_license").alias("nr_times_loaded"),
+            F.sum(F.col("req_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
+                "requested_weight_kg"
+            ),
+            F.sum(F.col("loaded_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
+                "loaded_weight_kg"
+            ),
+            F.avg(F.col("feedtype_loading_deviation_g") / GRAMS_IN_KILOGRAM).alias(
+                "avg_loading_deviation_kg"
+            ),
+            # if loading accuracy perc is <= 0 we set its accuracy to 0
+            # it will be included in the calculation
+            F.avg(
+                F.when(
+                    F.col("feedtype_completed"),
+                    F.when(F.col("loading_accuracy_percentage") <= 0, 0).otherwise(
+                        F.col("loading_accuracy_percentage")
+                    ),
+                )
+            ).alias("loading_accuracy_perc"),
+        )
+        .where((F.col("requested_weight_kg") / F.col("nr_times_loaded")) < 1500)
+        .where(F.col("avg_loading_deviation_kg") < 11000)
+    )
+
     with_kitchen_names = (
-        feed_daily_fact.alias("f")
+        feed_daily_fact.alias("fact")
         .join(
             silver_kitchen_feed_names_dim.alias("dim"),
             on=join_condition_dim,
             how="left",
         )
-        .select("f.*", F.col("name").alias("feed_name"))
+        .select("fact.*", F.col("name").alias("feed_name"))
     )
 
     with_missing_days = (
         add_missing_days_func(
-            with_kitchen_names, "1 days", ["farm_license", "system_number", "feed_id"]
+            with_kitchen_names.withColumn(
+                "next_date", F.lead(F.col("date")).over(feed_window)
+            ),
+            "1 days",
+            ["farm_license", "system_number", "feed_id"],
         )
-        .drop("next_date", "start_date", "end_date", "pos")
-        .withColumn("date", F.to_date("date"))
+        .select(
+            "farm_license",
+            "system_number",
+            "feed_id",
+            "date",
+            *[
+                F.when(F.col("pos") > 0, F.lit(None)).otherwise(F.col(c)).alias(c)
+                for c in columns_with_daily_values
+            ],
+            "feed_name"
+        )
+        .withColumn("date", F.to_date(F.col("date")))
+        .withColumnRenamed("start_date", "date")
     )
 
     return with_missing_days

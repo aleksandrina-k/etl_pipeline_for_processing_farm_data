@@ -1,13 +1,13 @@
 feed_daily_fact_schema = """
     farm_license STRING,
     system_number INTEGER,
-    date DATE NOT NULL,
     feed_id INTEGER,
+    date DATE NOT NULL,
+    nr_times_loaded LONG,
+    requested_weight_kg DOUBLE,
+    loaded_weight_kg DOUBLE,
+    avg_loading_deviation_kg DOUBLE,
     loading_accuracy_perc DOUBLE,
-    total_requested_weight_kg DOUBLE,
-    total_loaded_weight_kg DOUBLE,
-    avg_requested_weight_kg DOUBLE,
-    avg_loaded_weight_kg DOUBLE,
     feed_name STRING
 """
 

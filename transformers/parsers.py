@@ -11,9 +11,9 @@ def parse_mfr_config(df: DataFrame) -> DataFrame:
             "data", F.from_json(F.col("data").cast("string"), schema=mfr_config_schema)
         )
         .withColumn("phases", F.col("data.phases"))
-        .withColumn("freq_type_mixer", F.col("data.freq_type_mixer"))
-        .withColumn("freq_type_roller", F.col("data.freq_type_roller"))
-        .withColumn("relays_type", F.col("data.relays_type"))
+        .withColumn("freq_type_mixer", F.col("data.freqTypeMixer"))
+        .withColumn("freq_type_roller", F.col("data.freqTypeRoller"))
+        .withColumn("relays_type", F.col("data.relaysType"))
     )
 
 
@@ -44,7 +44,7 @@ def parse_mfr_load_done(df: DataFrame) -> DataFrame:
         .withColumn("total_weight", F.col("data.weight"))
         .withColumn("seq_nr", F.col("data.seqNr"))
         .select("*", F.posexplode("data.results").alias("result_position", "result"))
-        .withColumn("feed_id", F.col("result.feed_id"))
+        .withColumn("feed_id", F.col("result.feedId"))
         .withColumn("req_weight", F.col("result.reqWeight"))
         .withColumn("weight", F.col("result.weight"))
         .withColumn("completed", F.col("result.completed"))
@@ -77,7 +77,7 @@ def parse_t4c_kitchen_feed_names(df: DataFrame) -> DataFrame:
             ),
         )
         .withColumn("feedNames", F.explode(F.col("data.feedNames")))
-        .withColumn("feed_id", F.col("feedNames.feed_id"))
+        .withColumn("feed_id", F.col("feedNames.feedId"))
         .withColumn("name", F.col("feedNames.name"))
         .drop("feedNames")
     )

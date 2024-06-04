@@ -6,12 +6,11 @@ from jobs.process_silver1_to_gold import ProcessSilver1ToGold
 
 if __name__ == "__main__":
     # TODO: fix wrongly encoded strings in the ration and feed names
-    # TODO: convert all columns to snake_case
     # TODO: fix the KPIs after grouping. Need to be calculated correctly.
     # TODO: figure out why there are duplicates in the gold layer tables
     # TODO: consider reading the data from blobs instead of csv files
     # TODO: figure out how to optimize it
-    # TODO: replace feed_daily_fact with the corrected one
+
     config_file_path = r"conf/load_data_from_warehouse.json"
 
     task1 = LoadDataFromWarehouse(config_file_path)

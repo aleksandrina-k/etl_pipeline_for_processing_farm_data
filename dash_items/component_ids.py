@@ -19,11 +19,11 @@ FEED_CONTAINER_ID = "feed_container_id"
 FEED_MAPPER_ID = "feed_mapper_id"
 FEED_KPI_PICKER_ID = "feed_kpi_picker_id"
 FEED_KPIS = [
+    "nr_times_loaded",
+    "requested_weight_kg",
+    "loaded_weight_kg",
+    "avg_loading_deviation_kg",
     "loading_accuracy_perc",
-    "total_requested_weight_kg",
-    "total_loaded_weight_kg",
-    "avg_requested_weight_kg",
-    "avg_loaded_weight_kg",
 ]
 
 # RATION
