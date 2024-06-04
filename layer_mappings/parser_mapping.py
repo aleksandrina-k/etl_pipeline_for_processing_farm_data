@@ -33,7 +33,8 @@ def parser_mapping():
                 result_table="mfr_load_start",
                 parser=parse_mfr_load_start,
                 schema_str=mfr_load_start_schema,
-                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS | {"rationId", "seqNr"},
+                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS
+                | {"ration_id", "seq_nr"},
                 enable_change_data_feed=True,
             )
         ],
@@ -43,14 +44,15 @@ def parser_mapping():
                 parser=parse_mfr_load_done,
                 schema_str=mfr_load_done_schema,
                 match_columns=ParserConf.DEFAULT_MATCH_COLUMNS
-                | {"rationId", "seqNr", "feedId"},
+                | {"ration_id", "seq_nr", "feed_id"},
                 enable_change_data_feed=True,
             ),
             ParserConf(
                 result_table="mfr_load_done_result",
                 parser=parse_mfr_load_done_result,
                 schema_str=mfr_load_done_result_schema,
-                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS | {"rationId", "seqNr"},
+                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS
+                | {"ration_id", "seq_nr"},
                 enable_change_data_feed=True,
             ),
         ],
@@ -59,7 +61,7 @@ def parser_mapping():
                 result_table="t4c_kitchen_feed_names",
                 parser=parse_t4c_kitchen_feed_names,
                 schema_str=t4c_kitchen_feed_names_schema,
-                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS | {"feedId"},
+                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS | {"feed_id"},
                 enable_change_data_feed=True,
             ),
         ],
@@ -68,7 +70,7 @@ def parser_mapping():
                 result_table="t4c_ration_names",
                 parser=parse_t4c_ration_names,
                 schema_str=t4c_ration_names_schema,
-                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS | {"rationId"},
+                match_columns=ParserConf.DEFAULT_MATCH_COLUMNS | {"ration_id"},
             ),
         ],
     }

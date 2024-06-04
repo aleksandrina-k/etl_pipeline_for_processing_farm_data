@@ -36,8 +36,9 @@ def _process_bronze_to_msg_table(
     silver_df = conf.parser(bronze_table_df).withColumn(
         "year_month", F.date_format(F.col("time"), "yyyy-MM")
     )
+    silver_df_deduplicated = silver_df.dropDuplicates(list(conf.match_columns))
     (
-        silver_df.write.format("delta")
+        silver_df_deduplicated.write.format("delta")
         .option("schema", conf.schema)
         .mode("append")
         .partitionBy(list(conf.DEFAULT_PARTITION_COLUMNS))
