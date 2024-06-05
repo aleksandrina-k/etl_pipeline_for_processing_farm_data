@@ -39,10 +39,10 @@ def update_mfr_line_chart(
     selected_kpi,
 ):
     spark = SparkSession.builder.getOrCreate()
-    mfr_daily_fact_table_path = path.abspath("spark-warehouse/gold/mfr_daily_fact")
+    farm_daily_fact_table_path = path.abspath("spark-warehouse/gold/farm_daily_fact")
     container = ""
 
-    dff = spark.read.load(mfr_daily_fact_table_path).toPandas()
+    dff = spark.read.load(farm_daily_fact_table_path).dropDuplicates().toPandas()
 
     # in case only one farm is selected
     if selected_farm is not None:
@@ -110,7 +110,7 @@ def update_feed_line_chart(
     feed_daily_fact_table_path = path.abspath("spark-warehouse/gold/feed_daily_fact")
     container = ""
 
-    dff = spark.read.load(feed_daily_fact_table_path).toPandas()
+    dff = spark.read.load(feed_daily_fact_table_path).dropDuplicates().toPandas()
 
     # in case only one farm is selected
     if selected_farm is not None:
@@ -182,7 +182,7 @@ def update_ration_line_chart(
     )
     container = ""
 
-    dff = spark.read.load(ration_daily_fact_table_path).toPandas()
+    dff = spark.read.load(ration_daily_fact_table_path).dropDuplicates().toPandas()
 
     # in case only one farm is selected
     if selected_farm is not None:

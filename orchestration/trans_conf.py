@@ -114,11 +114,19 @@ class TransConf:
             )
 
         (
-            silver1_df.write.format("delta")
+            silver1_df.dropDuplicates()
+            .write.format("delta")
             .mode("overwrite")
             .partitionBy(list(self.partition_columns))
             .save(f"{result_dir_location}/{self.result_table}")
         )
+
+        # (
+        #     silver1_df.dropDuplicates()
+        #         .write.format("csv")
+        #         .mode("overwrite")
+        #         .save(f"{result_dir_location}/csv_gold/{self.result_table}")
+        # )
 
         end_time = time.time()
         time_diff = round((end_time - start_time) / 60, 2)

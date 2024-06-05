@@ -24,11 +24,12 @@ ration_daily_fact_schema = """
     ration_name STRING
 """
 
-mfr_daily_fact_schema = """
+farm_daily_fact_schema = """
     farm_license STRING,
     date DATE NOT NULL,
     total_requested_weight_kg DOUBLE,
     total_loaded_weight_kg DOUBLE,
+    nr_of_loading_activities_per_day LONG,
     loading_accuracy_perc DOUBLE,
     nr_schneider_freq_control INTEGER,
     nr_commsk_freq_control INTEGER

@@ -121,10 +121,12 @@ def feed_daily_fact_transformer(
             "feed_id",
             "date",
             *[
-                F.when(F.col("pos") > 0, F.lit(None)).otherwise(F.col(c)).alias(c)
+                F.when(F.col("pos") > 0, F.lit(None))
+                .otherwise(F.round(F.col(c), 2))
+                .alias(c)
                 for c in columns_with_daily_values
             ],
-            "feed_name"
+            "feed_name",
         )
         .withColumn("date", F.to_date(F.col("date")))
         .withColumnRenamed("start_date", "date")
@@ -242,23 +244,22 @@ def ration_daily_fact_transformer(
         "ration_id",
         F.col("date").cast("date"),
         *[
-            F.when(F.col("pos") > 0, F.lit(None)).otherwise(F.col(c)).alias(c)
+            F.when(F.col("pos") > 0, F.lit(None))
+            .otherwise(F.round(F.col(c), 2))
+            .alias(c)
             for c in columns_with_daily_values
         ],
-        "ration_name"
+        "ration_name",
     )
 
     return with_missing_days
 
 
-def mfr_daily_fact_transformer(
+def farm_daily_fact_transformer(
     silver_mfr_loading_activity: DataFrame,
     silver_mfr_config_dim: DataFrame,
 ) -> DataFrame:
-    MFR1_DEV_LDN = [71, 118]
-    MFR2_DEV_LDN = [72, 119]
-
-    mfr_window = Window.partitionBy("farm_license").orderBy("date")
+    farm_window = Window.partitionBy("farm_license").orderBy("date")
 
     join_condition_dim = (
         (F.col("f.farm_license") == F.col("dim.farm_license"))
@@ -266,51 +267,46 @@ def mfr_daily_fact_transformer(
         & (F.col("f.date") <= F.col("dim.end_time"))
     )
 
+    columns_with_daily_values = [
+        "total_requested_weight_kg",
+        "total_loaded_weight_kg",
+        "nr_of_loading_activities_per_day",
+        "loading_accuracy_perc",
+        "nr_schneider_freq_control",
+        "nr_commsk_freq_control",
+    ]
+
     feed_exploded = _explode_mfr_loading_activity(silver_mfr_loading_activity)
 
     # aggregating daily loading facts per vector system
-    vector_daily = (
+    farm_daily = (
         feed_exploded.withColumn("date", F.to_date(F.col("start_time")))
-        .groupBy("farm_license", "date", "device_number", "loading_uuid")
+        .groupBy("farm_license", "date")
         .agg(
-            F.sum("req_weight_feedtype_g").alias("req_weight_per_load_g_summed"),
-            F.sum("loaded_weight_feedtype_g").alias("loaded_weight_per_load_g_summed"),
+            F.sum(F.col("req_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
+                "total_requested_weight_kg"
+            ),
+            F.sum(F.col("loaded_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
+                "total_loaded_weight_kg"
+            ),
             # if loading accuracy perc is <= 0 we set its accuracy to 0
             # it will be included in the calculation
             F.sum(
                 F.when(F.col("loading_accuracy_percentage") <= 0, 0).otherwise(
                     F.col("loading_accuracy_percentage")
                 )
-            ).alias("loading_accuracy_percentage_summed"),
-            F.count("feed_id").alias("nr_of_feed_per_load"),
-        )
-        .groupBy("farm_license", "date")
-        .agg(
-            F.sum("req_weight_per_load_g_summed").alias("total_requested_weight_g"),
-            F.sum("loaded_weight_per_load_g_summed").alias("total_loaded_weight_g"),
-            F.sum("loading_accuracy_percentage_summed").alias(
-                "loading_accuracy_perc_summed"
-            ),
-            F.sum("nr_of_feed_per_load").alias("nr_of_feed_per_day"),
-        )
-        .withColumn(
-            "total_requested_weight_kg",
-            F.col("total_requested_weight_g") / GRAMS_IN_KILOGRAM,
-        )
-        .withColumn(
-            "total_loaded_weight_kg", F.col("total_loaded_weight_g") / GRAMS_IN_KILOGRAM
+            ).alias("loading_accuracy_perc_summed"),
+            F.count("feed_id").alias("nr_of_feed_per_day"),
+            F.count("loading_uuid").alias("nr_of_loading_activities_per_day"),
         )
         .withColumn(
             "loading_accuracy_perc",
             F.col("loading_accuracy_perc_summed") / F.col("nr_of_feed_per_day"),
         )
         .drop(
-            "total_requested_weight_g",
-            "total_loaded_weight_g",
             "loading_accuracy_perc_summed",
             "nr_of_feed_per_day",
         )
-        .withColumn("next_date", F.lead(F.col("date")).over(mfr_window))
     )
 
     silver_mfr_config_unique_ss = create_dim_table(
@@ -339,62 +335,13 @@ def mfr_daily_fact_transformer(
         )
     )
 
-    mfr1_config_count = mfr_config_count.filter(
-        F.col("device_number").isin(MFR1_DEV_LDN)
-    )
-    mfr2_config_count = mfr_config_count.filter(
-        F.col("device_number").isin(MFR2_DEV_LDN)
-    )
-
-    vector_daily_fact = (
-        vector_daily.alias("f")
+    farm_daily_fact = (
+        farm_daily.alias("f")
         # add count for MFRs
-        .join(mfr1_config_count.alias("dim"), on=join_condition_dim, how="left")
-        .select(
+        .join(mfr_config_count.alias("dim"), on=join_condition_dim, how="left").select(
             "f.*",
-            F.col("mfr_nr_schneider").alias("mfr_1_nr_schneider"),
-            F.col("mfr_nr_commsk").alias("mfr_1_nr_commsk"),
-        )
-        .alias("f")
-        .join(mfr2_config_count.alias("dim"), on=join_condition_dim, how="left")
-        .select(
-            "f.*",
-            F.col("mfr_nr_schneider").alias("mfr_2_nr_schneider"),
-            F.col("mfr_nr_commsk").alias("mfr_2_nr_commsk"),
-        )
-        .alias("f")
-        # sum all info we have for schneider
-        .selectExpr(
-            "*",
-            """
-            if(isnull(mfr_1_nr_schneider)
-            and isnull(mfr_2_nr_schneider)
-            , null,
-            coalesce(mfr_1_nr_schneider, 0)
-            + coalesce(mfr_2_nr_schneider, 0)
-            )
-            as nr_schneider_freq_control
-            """,
-        )
-        # sum all info we have for commsk
-        .selectExpr(
-            "*",
-            """
-            if(isnull(mfr_1_nr_commsk)
-            and isnull(mfr_2_nr_commsk)
-            , null,
-            coalesce(mfr_1_nr_commsk, 0)
-            + coalesce(mfr_2_nr_commsk, 0)
-            )
-            as nr_commsk_freq_control
-            """,
-        )
-        # remove the columns we no longer need
-        .drop(
-            "mfr_1_nr_schneider",
-            "mfr_1_nr_commsk",
-            "mfr_2_nr_schneider",
-            "mfr_2_nr_commsk",
+            F.col("mfr_nr_schneider").alias("nr_schneider_freq_control"),
+            F.col("mfr_nr_commsk").alias("nr_commsk_freq_control"),
         )
     )
 
@@ -402,10 +349,21 @@ def mfr_daily_fact_transformer(
         "date", "next_date", use_posexplode=True
     )
 
-    with_missing_days = (
-        add_missing_days_func(vector_daily_fact, "1 days", ["farm_license"])
-        .drop("next_date", "start_date", "end_date", "pos")
-        .withColumn("date", F.to_date("date"))
+    with_missing_days = add_missing_days_func(
+        farm_daily_fact.withColumn(
+            "next_date", F.lead(F.col("date")).over(farm_window)
+        ),
+        "1 days",
+        ["farm_license"],
+    ).select(
+        "farm_license",
+        F.col("date").cast("date"),
+        *[
+            F.when(F.col("pos") > 0, F.lit(None))
+            .otherwise(F.round(F.col(c), 2))
+            .alias(c)
+            for c in columns_with_daily_values
+        ],
     )
 
     return with_missing_days
