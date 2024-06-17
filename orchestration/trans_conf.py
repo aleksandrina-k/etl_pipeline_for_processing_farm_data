@@ -104,7 +104,7 @@ class TransConf:
         }
 
         input_dfs = self._load_data(spark, default_dir_dict)
-        silver1_df = self.transformer(**input_dfs).dropDuplicates()
+        silver1_df = self.transformer(**input_dfs)
 
         if silver1_df.schema != self.schema:
             raise SchemaDoesNotMatchExpectedException(
