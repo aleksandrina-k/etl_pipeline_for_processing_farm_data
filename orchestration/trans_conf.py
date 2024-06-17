@@ -104,7 +104,7 @@ class TransConf:
         }
 
         input_dfs = self._load_data(spark, default_dir_dict)
-        silver1_df = self.transformer(**input_dfs)
+        silver1_df = self.transformer(**input_dfs).dropDuplicates()
 
         if silver1_df.schema != self.schema:
             raise SchemaDoesNotMatchExpectedException(
@@ -114,15 +114,15 @@ class TransConf:
             )
 
         (
-            silver1_df.dropDuplicates()
-            .write.format("delta")
+            silver1_df.write.format("delta")
             .mode("overwrite")
             .partitionBy(list(self.partition_columns))
             .save(f"{result_dir_location}/{self.result_table}")
         )
+        silver1_df.sort("farm_license", "start_time").limit(10).show(truncate=False)
 
         # (
-        #     silver1_df.dropDuplicates()
+        #     silver1_df
         #         .write.format("csv")
         #         .mode("overwrite")
         #         .save(f"{result_dir_location}/csv_gold/{self.result_table}")

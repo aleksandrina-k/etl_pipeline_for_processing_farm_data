@@ -40,12 +40,12 @@ def _process_bronze_to_msg_table(
     (
         silver_df_deduplicated.write.format("delta")
         .option("schema", conf.schema)
-        .mode("append")
+        .mode("overwrite")
         .partitionBy(list(conf.DEFAULT_PARTITION_COLUMNS))
         .save(result_table_location)
     )
 
     df = spark.read.load(result_table_location)
-    df.limit(10).show(truncate=False)
+    df.sort("farm_license", "time").limit(10).show(truncate=False)
 
     conf.optimize_result_table(spark, result_dir_location)
