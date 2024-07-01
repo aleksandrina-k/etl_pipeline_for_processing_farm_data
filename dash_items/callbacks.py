@@ -42,7 +42,16 @@ def update_mfr_line_chart(
     farm_daily_fact_table_path = path.abspath("spark-warehouse/gold/farm_daily_fact")
     container = ""
 
-    dff = spark.read.load(farm_daily_fact_table_path).dropDuplicates().toPandas()
+    dff = spark.read.load(farm_daily_fact_table_path).toPandas()
+
+    # df = (
+    #     spark.read.load(farm_daily_fact_table_path)
+    #         .dropDuplicates()
+    #         .where(F.col("farm_license") == "FXD3T-ZTKZ6-RGDO1")
+    #         .where(F.col("date") >= "2023-01-01")
+    #         .where(F.col("date") <= "2023-01-08")
+    # )
+    # df.sort("farm_license", "date").show()
 
     # in case only one farm is selected
     if selected_farm is not None:
@@ -110,7 +119,16 @@ def update_feed_line_chart(
     feed_daily_fact_table_path = path.abspath("spark-warehouse/gold/feed_daily_fact")
     container = ""
 
-    dff = spark.read.load(feed_daily_fact_table_path).dropDuplicates().toPandas()
+    dff = spark.read.load(feed_daily_fact_table_path).toPandas()
+
+    # df = (
+    #     spark.read.load(feed_daily_fact_table_path)
+    #         .dropDuplicates()
+    #         .where(F.col("farm_license") == "FXD3T-ZTKZ6-RGDO1")
+    #         .where(F.col("date") >= "2023-01-01")
+    #         .where(F.col("date") <= "2023-01-08")
+    # )
+    # df.sort("farm_license", "feed_id", "date").show()
 
     # in case only one farm is selected
     if selected_farm is not None:
@@ -182,7 +200,16 @@ def update_ration_line_chart(
     )
     container = ""
 
-    dff = spark.read.load(ration_daily_fact_table_path).dropDuplicates().toPandas()
+    dff = spark.read.load(ration_daily_fact_table_path).toPandas()
+
+    # df = (
+    #     spark.read.load(ration_daily_fact_table_path)
+    #         .dropDuplicates()
+    #         .where(F.col("farm_license") == "FXD3T-ZTKZ6-RGDO1")
+    #         .where(F.col("date") >= "2023-01-01")
+    #         .where(F.col("date") <= "2023-01-08")
+    # )
+    # df.sort("farm_license", "ration_id", "date").show()
 
     # in case only one farm is selected
     if selected_farm is not None:

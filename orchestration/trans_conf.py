@@ -3,7 +3,7 @@ import time
 from collections.abc import Callable
 from inspect import signature
 from os import path
-from delta import DeltaTable
+from delta.tables import DeltaTable
 from pyspark.sql import SparkSession
 from pyspark.sql.types import _parse_datatype_string
 from typing import List, Dict, Set
@@ -104,29 +104,37 @@ class TransConf:
         }
 
         input_dfs = self._load_data(spark, default_dir_dict)
-        silver1_df = self.transformer(**input_dfs)
+        result_df = self.transformer(**input_dfs)
 
-        if silver1_df.schema != self.schema:
+        if result_df.schema != self.schema:
             raise SchemaDoesNotMatchExpectedException(
                 result_table=self.result_table,
                 expected_schema=self.schema,
-                actual_schema=silver1_df.schema,
+                actual_schema=result_df.schema,
             )
 
         (
-            silver1_df.write.format("delta")
+            result_df.write.format("delta")
             .mode("overwrite")
             .partitionBy(list(self.partition_columns))
             .save(f"{result_dir_location}/{self.result_table}")
         )
-        silver1_df.sort("farm_license", "start_time").limit(10).show(truncate=False)
+        result_df.sort("farm_license").limit(10).show(truncate=False)
 
         # (
-        #     silver1_df
+        #     result_df.sort("farm_license", "date")
         #         .write.format("csv")
         #         .mode("overwrite")
         #         .save(f"{result_dir_location}/csv_gold/{self.result_table}")
         # )
+        # from pyspark.sql import functions as F
+        # duplicate_count = result_df.groupBy("farm_license", "date", "feed_id").count().where(
+        # F.col("count") > 1
+        # ).count()
+        # print(duplicate_count)
+        # duplicate_count = result_df.groupBy("farm_license", "date", "feed_id").count().where(
+        #     F.col("count") == 2).count()
+        # print(duplicate_count)
 
         end_time = time.time()
         time_diff = round((end_time - start_time) / 60, 2)

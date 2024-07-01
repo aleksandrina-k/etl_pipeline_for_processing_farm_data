@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Set, List
 from pyspark.sql import SparkSession, DataFrame, functions as F, Window
-from delta import DeltaTable
+from delta.tables import DeltaTable
 from orchestration.trans_conf import TransConf
 from orchestration.trans_mapping import TransMapping
 
@@ -105,8 +105,15 @@ def split_carryover_items_factory(
             input_df.withColumn("id", F.monotonically_increasing_id())
             .withColumn("window", F.window(event_start_time_column, window_duration))
             # Extact the window start and end from the window into columns
-            .withColumn("window_start", F.col("window.start"))
-            .withColumn("window_end", F.col("window.end"))
+            # .withColumn("window_start", F.date_add(F.col("window.start"), 1))
+            # .withColumn("window_end", F.date_add(F.col("window.end"), 1))
+            # note: these lines doesn't work as expected with pyspark==3.2.0, so they are replaced with the ones above
+            .withColumn(
+                "window_start", F.date_add(F.col("window.start"), 1).cast("timestamp")
+            )
+            .withColumn(
+                "window_end", F.date_add(F.col("window.end"), 1).cast("timestamp")
+            )
             .drop(F.col("window"))
             .select(
                 "*",

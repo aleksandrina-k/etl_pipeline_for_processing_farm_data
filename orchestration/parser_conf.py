@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from os import path
 from typing import Callable, Set
 
-from delta import DeltaTable
+from delta.tables import DeltaTable
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import _parse_datatype_string
 import time
