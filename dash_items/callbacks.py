@@ -4,11 +4,11 @@ import plotly.express as px
 from pyspark.sql import SparkSession
 from os import path
 from .component_ids import (
-    MFR_MAPPER_ID,
+    ROBOT_MAPPER_ID,
     DATE_PICKER_ID,
     FARM_PICKER_ID,
-    MFR_KPI_PICKER_ID,
-    MFR_CONTAINER_ID,
+    ROBOT_KPI_PICKER_ID,
+    ROBOT_CONTAINER_ID,
     FEED_CONTAINER_ID,
     FEED_KPI_PICKER_ID,
     FEED_MAPPER_ID,
@@ -22,17 +22,17 @@ DATE_FORMAT = "%Y-%m-%d"
 
 @callback(
     [
-        Output(component_id=MFR_CONTAINER_ID, component_property="children"),
-        Output(component_id=MFR_MAPPER_ID, component_property="figure"),
+        Output(component_id=ROBOT_CONTAINER_ID, component_property="children"),
+        Output(component_id=ROBOT_MAPPER_ID, component_property="figure"),
     ],
     [
         Input(component_id=DATE_PICKER_ID, component_property="start_date"),
         Input(component_id=DATE_PICKER_ID, component_property="end_date"),
         Input(component_id=FARM_PICKER_ID, component_property="value"),
-        Input(component_id=MFR_KPI_PICKER_ID, component_property="value"),
+        Input(component_id=ROBOT_KPI_PICKER_ID, component_property="value"),
     ],
 )
-def update_mfr_line_chart(
+def update_robot_line_chart(
     selected_start_date,
     selected_end_date,
     selected_farm,

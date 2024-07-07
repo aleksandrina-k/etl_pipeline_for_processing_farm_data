@@ -10,10 +10,10 @@ from dash_items.callbacks import *  # noqa: F401, F403
 from dash_items.component_ids import (
     DATE_PICKER_ID,
     FARM_PICKER_ID,
-    MFR_KPI_PICKER_ID,
-    MFR_KPIS,
-    MFR_CONTAINER_ID,
-    MFR_MAPPER_ID,
+    ROBOT_KPI_PICKER_ID,
+    ROBOT_KPIS,
+    ROBOT_CONTAINER_ID,
+    ROBOT_MAPPER_ID,
     FEED_KPI_PICKER_ID,
     FEED_KPIS,
     FEED_CONTAINER_ID,
@@ -43,9 +43,11 @@ class CreateDashboards(Job):
                 ),
                 generate_date_picker_range_component(DATE_PICKER_ID),
                 generate_dropdown_component_with_farms(FARM_PICKER_ID, farm_list),
-                html.H4("Select MFR KPI:"),
-                generate_radio_button_component_with_kpis(MFR_KPI_PICKER_ID, MFR_KPIS),
-                *generate_graph(MFR_CONTAINER_ID, MFR_MAPPER_ID),
+                html.H4("Select Robot KPI:"),
+                generate_radio_button_component_with_kpis(
+                    ROBOT_KPI_PICKER_ID, ROBOT_KPIS
+                ),
+                *generate_graph(ROBOT_CONTAINER_ID, ROBOT_MAPPER_ID),
                 html.H4("Select Feed KPI:"),
                 generate_radio_button_component_with_kpis(
                     FEED_KPI_PICKER_ID, FEED_KPIS

@@ -48,9 +48,6 @@ def illustrate_mapping():
 
     for table_name, conf in gold.mapping.items():
         for it in conf.input_tables:
-            # fix: get input tables from silver0
-            # mfr_indications_daily_count_transformer input tables
-            # are from silver0 and silver1
             if not nx_graph.nodes.get(it):
                 if it in silver1.existing_tables:
                     nx_graph.add_node(

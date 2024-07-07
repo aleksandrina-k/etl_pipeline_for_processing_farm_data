@@ -1,18 +1,15 @@
 from pyspark.sql import DataFrame, functions as F, Window
-
 from operations.helper_functions import create_dim_table, split_carryover_items_factory
 
-MFR1_DEV_LDN = [71, 118]
-MFR2_DEV_LDN = [72, 119]
 SECONDS_IN_HOUR = 3600
 GRAMS_IN_KILOGRAM = 1000
 
 
-def _explode_mfr_loading_activity(
-    silver_mfr_loading_activity: DataFrame,
+def _explode_loading_activity(
+    silver_loading_activity: DataFrame,
 ) -> DataFrame:
     loading_details = (
-        silver_mfr_loading_activity.select(
+        silver_loading_activity.select(
             # By exploding results we get a row for every feed_id in the ration
             "*",
             F.explode("results").alias("load_result"),
@@ -42,11 +39,11 @@ def _explode_mfr_loading_activity(
 
 
 def feed_daily_fact_transformer(
-    silver_mfr_loading_activity: DataFrame,
+    silver_loading_activity: DataFrame,
     silver_kitchen_feed_names_dim: DataFrame,
 ) -> DataFrame:
 
-    feed_exploded = _explode_mfr_loading_activity(silver_mfr_loading_activity)
+    feed_exploded = _explode_loading_activity(silver_loading_activity)
     feed_window = Window.partitionBy("farm_license", "feed_id").orderBy("date")
 
     add_missing_days_func = split_carryover_items_factory(
@@ -136,11 +133,11 @@ def feed_daily_fact_transformer(
 
 
 def ration_daily_fact_transformer(
-    silver_mfr_loading_activity: DataFrame,
+    silver_loading_activity: DataFrame,
     silver_ration_names_dim: DataFrame,
 ) -> DataFrame:
 
-    feed_exploded = _explode_mfr_loading_activity(silver_mfr_loading_activity)
+    feed_exploded = _explode_loading_activity(silver_loading_activity)
 
     ration_window_date = Window.partitionBy("farm_license", "ration_id").orderBy("date")
 
@@ -256,8 +253,8 @@ def ration_daily_fact_transformer(
 
 
 def farm_daily_fact_transformer(
-    silver_mfr_loading_activity: DataFrame,
-    silver_mfr_config_dim: DataFrame,
+    silver_loading_activity: DataFrame,
+    silver_robot_config_dim: DataFrame,
 ) -> DataFrame:
     farm_window = Window.partitionBy("farm_license").orderBy("date")
 
@@ -276,7 +273,7 @@ def farm_daily_fact_transformer(
         "nr_commsk_freq_control",
     ]
 
-    feed_exploded = _explode_mfr_loading_activity(silver_mfr_loading_activity)
+    feed_exploded = _explode_loading_activity(silver_loading_activity)
 
     # aggregating daily loading facts per vector system
     farm_daily = (
@@ -309,8 +306,8 @@ def farm_daily_fact_transformer(
         )
     )
 
-    silver_mfr_config_unique_ss = create_dim_table(
-        silver_mfr_config_dim,
+    robot_config_unique_ss = create_dim_table(
+        silver_robot_config_dim,
         partition_columns=["farm_license", "device_number"],
         column_names=[
             "freq_controller_type_mixer",
@@ -319,17 +316,17 @@ def farm_daily_fact_transformer(
         orderby_col="start_time",
     )
 
-    mfr_config_count = (
-        silver_mfr_config_unique_ss
-        # Calculate number of Schneiders active within MFR
+    robot_config_count = (
+        robot_config_unique_ss
+        # Calculate number of Schneiders active within the robot
         .withColumn(
-            "mfr_nr_schneider",
+            "nr_schneider",
             (F.col("freq_controller_type_mixer") == "SCHNEIDER").cast("int")
             + (F.col("freq_controller_type_dosing_roller") == "SCHNEIDER").cast("int"),
         )
-        # Calculate number of COMMSK active within MFR
+        # Calculate number of COMMSK active within the robor
         .withColumn(
-            "mfr_nr_commsk",
+            "nr_commsk",
             (F.col("freq_controller_type_mixer") == "COMMSK").cast("int")
             + (F.col("freq_controller_type_dosing_roller") == "COMMSK").cast("int"),
         )
@@ -337,11 +334,11 @@ def farm_daily_fact_transformer(
 
     farm_daily_fact = (
         farm_daily.alias("f")
-        # add count for MFRs
-        .join(mfr_config_count.alias("dim"), on=join_condition_dim, how="left").select(
+        .join(robot_config_count.alias("dim"), on=join_condition_dim, how="left")
+        .select(
             "f.*",
-            F.col("mfr_nr_schneider").alias("nr_schneider_freq_control"),
-            F.col("mfr_nr_commsk").alias("nr_commsk_freq_control"),
+            F.col("nr_schneider").alias("nr_schneider_freq_control"),
+            F.col("nr_commsk").alias("nr_commsk_freq_control"),
         )
     )
 

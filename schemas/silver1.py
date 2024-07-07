@@ -1,4 +1,4 @@
-silver_mfr_loading_activity_schema = """
+silver_loading_activity_schema = """
     farm_license STRING,
     device_number INTEGER,
     ration_id INTEGER,
@@ -20,7 +20,7 @@ silver_mfr_loading_activity_schema = """
     loading_speed_ration_g_per_s DOUBLE
 """
 
-silver_mfr_config_dim_schema = """
+silver_robot_config_dim_schema = """
     farm_license STRING,
     device_number INTEGER,
     start_time TIMESTAMP,
@@ -31,8 +31,7 @@ silver_mfr_config_dim_schema = """
     year_month STRING,
     end_time TIMESTAMP,
     duration_s LONG,
-    mfr_config_uuid STRING NOT NULL,
-    mfr_type STRING NOT NULL
+    config_uuid STRING NOT NULL
 """
 
 silver_kitchen_feed_names_dim_schema = """

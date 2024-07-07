@@ -2,24 +2,17 @@ from pyspark.sql import DataFrame, functions as F
 from operations.helper_functions import uuid_udf, create_dim_table
 
 
-def silver_mfr_loading_activity_transformer(
-    mfr_load_start: DataFrame, mfr_load_done_result: DataFrame
+def silver_loading_activity_transformer(
+    load_start: DataFrame, load_done_result: DataFrame
 ) -> DataFrame:
     """
-    The function combines the mfr_load_start and mfr_load_done messages into load activities.
+    The function combines the load_start and load_done messages into load activities.
     Args:
-        mfr_load_start: The mfr_load_start messages
-        mfr_load_done_result: The mfr_load_done_results
+        load_start: The load_start messages
+        load_done_result: The load_done_results
     Returns:
-        A DataFrame with mfr_loading activities with start and end time and a uuid in
+        A DataFrame with loading activities with start and end time and a uuid in
         loading_uuid
-    Note:
-        Sequence numbers are not unique and can be reused by the system. The same sequence
-        number can thus occur on multiple days. As a result, joining on the conditions
-        sequence number are equal and start time is smaller than end time would result in
-        multiple matches (i.e., all start messages before today will match today's end message
-        if they have the same sequence number). As the same sequence number is not (for the MFR)
-        reused on the same day, we use a 12hour window.
     """
 
     join_condition = (
@@ -35,7 +28,7 @@ def silver_mfr_loading_activity_transformer(
     )
 
     start_for_join = (
-        mfr_load_start.select(
+        load_start.select(
             "farm_license",
             "device_number",
             "time",
@@ -52,7 +45,7 @@ def silver_mfr_loading_activity_transformer(
     )
 
     end_for_join = (
-        mfr_load_done_result.select(
+        load_done_result.select(
             "farm_license",
             "device_number",
             "time",
@@ -65,7 +58,7 @@ def silver_mfr_loading_activity_transformer(
         .withColumnRenamed("total_weight", "loaded_weight_ration_g")
     )
 
-    mfr_loading_activity = (
+    loading_activity = (
         start_for_join.alias("start")
         .withWatermark("start_time", "12 HOURS")
         .join(
@@ -97,63 +90,57 @@ def silver_mfr_loading_activity_transformer(
         )
     )
 
-    return mfr_loading_activity
+    return loading_activity
 
 
-def silver_mfr_config_dim_transformer(mfr_config) -> DataFrame:
+def silver_robot_config_dim_transformer(robot_config) -> DataFrame:
     """
-    Create a dim DataFrame with mfr configuration data with a uuid
+    Create a dim DataFrame with robot configuration data with a uuid
 
     Args:
-        mfr_config: DataFrame with mfr_config data
+        robot_config: DataFrame with robot configuration data
     Returns:
         DataFrame with all new configurations per device, start and end time and
-        a uuid in mfr_config_uuid
+        a uuid in config_uuid
     """
 
-    mfr_config = (
-        mfr_config
+    robot_config = (
+        robot_config
         # drop unused columns
         .drop("device_type", "msg_type", "processing_time", "data")
         # sometimes there are messages from other devices due to a mismatch between SW versions
-        .filter(F.col("device_type") == "MFR")
-        # remove UNKNOWN relays_type, since they don't give information about MFR type
+        .filter(F.col("device_type") == "robot")
+        # remove UNKNOWN relays_type, since they don't give information about the robot type
         .filter(F.col("relays_type") != "UNKNOWN")
     )
 
-    mfr_config_dim = create_dim_table(
-        mfr_config,
+    config_dim = create_dim_table(
+        robot_config,
         partition_columns=["farm_license", "device_number"],
         column_names=["freq_type_mixer", "freq_type_roller", "relays_type", "phases"],
     )
 
     return (
-        mfr_config_dim.withColumn("mfr_config_uuid", uuid_udf())
+        config_dim.withColumn("config_uuid", uuid_udf())
         # Rename columns
         .withColumnRenamed("freq_type_mixer", "freq_controller_type_mixer")
         .withColumnRenamed("freq_type_roller", "freq_controller_type_dosing_roller")
         .withColumnRenamed("relays_type", "relays_type")
         .replace(to_replace={"THREE_PHASE": "3", "ONE_PHASE": "1"}, subset="phases")
-        .withColumn(
-            "mfr_type",
-            F.when(F.col("relays_type") == "EM773", "M1")
-            .when(F.col("relays_type") == "SCHNEIDER", "M2")
-            .otherwise("M3"),
-        )
     )
 
 
-def silver_kitchen_feed_names_dim_transformer(t4c_kitchen_feed_names) -> DataFrame:
+def silver_kitchen_feed_names_dim_transformer(kitchen_feed_names) -> DataFrame:
     """
     Args:
-        t4c_kitchen_feed_names: Dataframe with data about names of different feed
+        kitchen_feed_names: Dataframe with data about names of different feed
     Returns:
         Enriched dataframe with valid from/to timestamps for each name.
     """
 
     feed_names = (
         # removing feed_id == 0, because they don't bring any value
-        t4c_kitchen_feed_names.filter(F.col("feed_id") != 0)
+        kitchen_feed_names.filter(F.col("feed_id") != 0)
         # fix wrongly encoded strings
         .withColumn(
             "encoded_name", F.decode(F.encode(F.col("name"), "ISO-8859-1"), "utf-8")
@@ -184,17 +171,17 @@ def silver_kitchen_feed_names_dim_transformer(t4c_kitchen_feed_names) -> DataFra
     )
 
 
-def silver_ration_names_dim_transformer(t4c_ration_names) -> DataFrame:
+def silver_ration_names_dim_transformer(ration_names) -> DataFrame:
     """
     Args:
-        t4c_ration_names: Dataframe with data about names of different rations
+        ration_names: Dataframe with data about names of different rations
     Returns:
         Enriched dataframe with valid from/to timestamps for each name.
     """
 
     ration_names = (
         # removing ration_id == 0, because they don't bring any value
-        t4c_ration_names.filter(F.col("ration_id") != 0)
+        ration_names.filter(F.col("ration_id") != 0)
         # fix wrongly encoded strings
         .withColumn(
             "encoded_name", F.decode(F.encode(F.col("name"), "ISO-8859-1"), "utf-8")

@@ -1,6 +1,6 @@
 import pyspark.sql.types as T
 
-t4c_kitchen_feed_names_schema = T.StructType(
+kitchen_feed_names_schema = T.StructType(
     [
         T.StructField(
             "feedNames",
@@ -16,7 +16,7 @@ t4c_kitchen_feed_names_schema = T.StructType(
     ]
 )
 
-t4c_ration_names_schema = T.StructType(
+ration_names_schema = T.StructType(
     [
         T.StructField(
             "rationNames",

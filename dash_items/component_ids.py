@@ -2,11 +2,11 @@
 DATE_PICKER_ID = "date_picker_id"
 FARM_PICKER_ID = "farm_picker_id"
 
-# MFR
-MFR_CONTAINER_ID = "mfr_container_id"
-MFR_MAPPER_ID = "mfr_mapper_id"
-MFR_KPI_PICKER_ID = "mfr_kpi_picker_id"
-MFR_KPIS = [
+# Robot
+ROBOT_CONTAINER_ID = "robot_container_id"
+ROBOT_MAPPER_ID = "robot_mapper_id"
+ROBOT_KPI_PICKER_ID = "robot_kpi_picker_id"
+ROBOT_KPIS = [
     "loading_accuracy_perc",
     "total_requested_weight_kg",
     "total_loaded_weight_kg",

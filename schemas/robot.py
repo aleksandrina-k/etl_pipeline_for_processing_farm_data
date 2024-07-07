@@ -1,6 +1,6 @@
 import pyspark.sql.types as T
 
-mfr_config_schema = T.StructType(
+robot_config_schema = T.StructType(
     [
         T.StructField("phases", T.StringType(), False),
         T.StructField("freqTypeMixer", T.StringType(), False),
@@ -9,7 +9,7 @@ mfr_config_schema = T.StructType(
     ]
 )
 
-mfr_load_done_schema = T.StructType(
+load_done_schema = T.StructType(
     [
         T.StructField("rationId", T.IntegerType(), False),
         T.StructField("weight", T.IntegerType(), False),
@@ -30,7 +30,7 @@ mfr_load_done_schema = T.StructType(
     ]
 )
 
-mfr_load_start_schema = T.StructType(
+load_start_schema = T.StructType(
     [
         T.StructField("rationId", T.IntegerType(), False),
         T.StructField("reqWeight", T.IntegerType(), False),
