@@ -52,9 +52,11 @@ def feed_daily_fact_transformer(
 
     columns_with_daily_values = [
         "nr_times_loaded",
+        "avg_loading_speed_kg_per_h",
         "requested_weight_kg",
         "loaded_weight_kg",
         "avg_loading_deviation_kg",
+        "total_loading_deviation_kg",
         "loading_accuracy_perc",
     ]
 
@@ -71,11 +73,17 @@ def feed_daily_fact_transformer(
         .groupBy("farm_license", "date", "feed_id")
         .agg(
             F.count("farm_license").alias("nr_times_loaded"),
+            (F.avg("loading_speed_ration_g_per_s") / 3.6).alias(
+                "avg_loading_speed_kg_per_h"
+            ),
             F.sum(F.col("req_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
                 "requested_weight_kg"
             ),
             F.sum(F.col("loaded_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
                 "loaded_weight_kg"
+            ),
+            F.sum(F.col("feedtype_loading_deviation_g") / GRAMS_IN_KILOGRAM).alias(
+                "total_loading_deviation_kg"
             ),
             F.avg(F.col("feedtype_loading_deviation_g") / GRAMS_IN_KILOGRAM).alias(
                 "avg_loading_deviation_kg"
@@ -149,10 +157,11 @@ def ration_daily_fact_transformer(
     )
 
     columns_with_daily_values = [
-        "total_loading_speed_kg_per_h",
-        "total_requested_weight_kg",
-        "total_loaded_weight_kg",
-        "avg_nr_of_feed_in_ration",
+        "avg_loading_speed_kg_per_h",
+        "requested_weight_kg",
+        "loaded_weight_kg",
+        "avg_loading_deviation_kg",
+        "total_loading_deviation_kg",
         "total_nr_of_feed_per_load",
         "total_nr_bins_loaded",
         "loading_accuracy_perc",
@@ -184,6 +193,12 @@ def ration_daily_fact_transformer(
             F.sum((F.col("loaded_weight_feedtype_g") / GRAMS_IN_KILOGRAM)).alias(
                 "total_loaded_weight_per_load_kg"
             ),
+            F.avg(F.col("feedtype_loading_deviation_g") / GRAMS_IN_KILOGRAM).alias(
+                "avg_loading_deviation_kg"
+            ),
+            F.sum(F.col("feedtype_loading_deviation_g") / GRAMS_IN_KILOGRAM).alias(
+                "sum_loading_deviation_kg"
+            ),
             # if loading accuracy perc is <= 0 we set its accuracy to 0
             # it will be included in the calculation
             F.sum(
@@ -196,15 +211,12 @@ def ration_daily_fact_transformer(
         )
         .groupBy("farm_license", "date", "ration_id")
         .agg(
-            F.sum("loading_speed_ration_kg_per_h").alias(
-                "total_loading_speed_kg_per_h"
-            ),
-            F.sum("total_requested_weight_per_load_kg").alias(
-                "total_requested_weight_kg"
-            ),
-            F.sum("total_loaded_weight_per_load_kg").alias("total_loaded_weight_kg"),
+            F.avg("loading_speed_ration_kg_per_h").alias("avg_loading_speed_kg_per_h"),
+            F.sum("total_requested_weight_per_load_kg").alias("requested_weight_kg"),
+            F.sum("total_loaded_weight_per_load_kg").alias("loaded_weight_kg"),
+            F.avg("avg_loading_deviation_kg").alias("avg_loading_deviation_kg"),
+            F.sum("sum_loading_deviation_kg").alias("total_loading_deviation_kg"),
             F.sum("loading_accuracy_perc").alias("loading_accuracy_perc"),
-            F.avg("nr_of_feed_per_load").alias("avg_nr_of_feed_in_ration"),
             F.sum("nr_of_feed_per_load").alias("total_nr_of_feed_per_load"),
             F.sum("bins_loaded").alias("total_nr_bins_loaded"),
         )
@@ -265,8 +277,11 @@ def farm_daily_fact_transformer(
     )
 
     columns_with_daily_values = [
-        "total_requested_weight_kg",
-        "total_loaded_weight_kg",
+        "avg_loading_speed_kg_per_h",
+        "requested_weight_kg",
+        "loaded_weight_kg",
+        "avg_loading_deviation_kg",
+        "total_loading_deviation_kg",
         "nr_of_loading_activities_per_day",
         "loading_accuracy_perc",
         "nr_schneider_freq_control",
@@ -280,11 +295,20 @@ def farm_daily_fact_transformer(
         feed_exploded.withColumn("date", F.to_date(F.col("start_time")))
         .groupBy("farm_license", "date")
         .agg(
+            (F.avg("loading_speed_ration_g_per_s") / 3.6).alias(
+                "avg_loading_speed_kg_per_h"
+            ),
             F.sum(F.col("req_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
-                "total_requested_weight_kg"
+                "requested_weight_kg"
             ),
             F.sum(F.col("loaded_weight_feedtype_g") / GRAMS_IN_KILOGRAM).alias(
-                "total_loaded_weight_kg"
+                "loaded_weight_kg"
+            ),
+            F.avg(F.col("feedtype_loading_deviation_g") / GRAMS_IN_KILOGRAM).alias(
+                "avg_loading_deviation_kg"
+            ),
+            F.avg(F.col("feedtype_loading_deviation_g") / GRAMS_IN_KILOGRAM).alias(
+                "total_loading_deviation_kg"
             ),
             # if loading accuracy perc is <= 0 we set its accuracy to 0
             # it will be included in the calculation

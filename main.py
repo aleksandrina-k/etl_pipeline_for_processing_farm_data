@@ -5,9 +5,10 @@ from jobs.process_silver0_to_silver1 import ProcessSilver0ToSilver1
 from jobs.process_silver1_to_gold import ProcessSilver1ToGold
 
 if __name__ == "__main__":
-    # TODO: figure out why there are duplicates in the gold layer tables
-    # TODO: consider reading the data from blobs instead of csv files
+    # TODO: fix KPI labels when visualizing
+    # TODO: fix the dimension tables to have records before 2023
     # TODO: figure out how to optimize it
+    # https://www.kaggle.com/datasets/nelgiriyewithana/cow-farms-feeding-robots
 
     config_file_path = r"conf/load_data_from_warehouse.json"
 
@@ -21,4 +22,4 @@ if __name__ == "__main__":
     task2.launch()
     task3.launch()
     task4.launch()
-    # task5.launch()
+    task5.launch()
