@@ -5,6 +5,7 @@
 .vscode
 .ipynb_checkpoints
 .eggs
+.coverage
 
 venv/
 .idea/
