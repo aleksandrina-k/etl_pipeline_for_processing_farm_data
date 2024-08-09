@@ -32,6 +32,7 @@ class LoadDataFromWarehouse(Job):
             .option("escape", '"')
             .schema(_parse_datatype_string(bronze_table_str))
             .csv(f"{config.csv_data_location}\\bronze_table.csv")
+            .withColumn("source_path", F.input_file_name())
             .withColumn("processing_time", F.current_timestamp())
         )
         bronze_data_df.limit(10).show(truncate=False)

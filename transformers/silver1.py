@@ -107,7 +107,7 @@ def silver_robot_config_dim_transformer(robot_config) -> DataFrame:
     robot_config = (
         robot_config
         # drop unused columns
-        .drop("device_type", "msg_type", "processing_time", "data")
+        .drop("device_type", "msg_type", "processing_time", "data", "source_path")
         # sometimes there are messages from other devices due to a mismatch between SW versions
         .filter(F.col("device_type") == "robot")
         # remove UNKNOWN relays_type, since they don't give information about the robot type
@@ -161,7 +161,14 @@ def silver_kitchen_feed_names_dim_transformer(kitchen_feed_names) -> DataFrame:
             ).otherwise(F.col("encoded_name")),
         ).drop("encoded_name")
         # drop unused columns
-        .drop("device_number", "device_type", "msg_type", "processing_time", "data")
+        .drop(
+            "device_number",
+            "device_type",
+            "msg_type",
+            "processing_time",
+            "data",
+            "source_path",
+        )
     )
 
     return create_dim_table(
@@ -203,7 +210,14 @@ def silver_ration_names_dim_transformer(ration_names) -> DataFrame:
         ).drop("encoded_name")
         # drop unused columns
         # drop unused columns
-        .drop("device_number", "device_type", "msg_type", "processing_time", "data")
+        .drop(
+            "device_number",
+            "device_type",
+            "msg_type",
+            "processing_time",
+            "data",
+            "source_path",
+        )
     )
 
     return create_dim_table(

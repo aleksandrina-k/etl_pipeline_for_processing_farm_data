@@ -6,5 +6,6 @@ BASE_COLUMNS = """
     time TIMESTAMP,
     data STRING,
     processing_time TIMESTAMP,
+    source_path STRING,
     year_month STRING
 """
