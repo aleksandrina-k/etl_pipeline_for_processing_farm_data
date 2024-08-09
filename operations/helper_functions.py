@@ -1,7 +1,9 @@
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from typing import Set, List
 from pyspark.sql import SparkSession, DataFrame, functions as F, Window
 from delta.tables import DeltaTable
+from pyspark.sql.types import StructType, StructField, DateType
+
 from orchestration.trans_conf import TransConf
 from orchestration.trans_mapping import TransMapping
 
@@ -10,6 +12,21 @@ max_datetime = datetime(2099, 12, 31, 23, 59, 59)
 
 def uuid_udf():
     return F.expr("uuid()")
+
+
+def generate_calendar_table() -> DataFrame:
+    spark = SparkSession.builder.getOrCreate()
+
+    schema = StructType([StructField("date", DateType(), False)])
+
+    start_date = date(2023, 1, 1)
+    end_date = date(2023, 12, 31)
+    dates = [
+        (start_date + timedelta(days=i),)
+        for i in range((end_date - start_date).days + 1)
+    ]
+
+    return spark.createDataFrame(dates, schema)
 
 
 def create_dim_table(
