@@ -12,5 +12,6 @@ bronze_table_str = """
     msg_type STRING,
     time TIMESTAMP,
     data STRING,
-    processing_time TIMESTAMP
+    processing_time TIMESTAMP,
+    source_path STRING
 """

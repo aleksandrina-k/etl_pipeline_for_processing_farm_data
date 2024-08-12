@@ -35,25 +35,6 @@ def parse_load_start(df: DataFrame) -> DataFrame:
 
 
 # LOAD_DONE:
-def parse_load_done(df: DataFrame) -> DataFrame:
-    return (
-        df.filter(F.col("msg_type") == "LOAD_DONE")
-        .withColumn(
-            "data",
-            F.from_json(F.col("data").cast("string"), schema=load_done_schema),
-        )
-        .withColumn("ration_id", F.col("data.rationId"))
-        .withColumn("total_weight", F.col("data.weight"))
-        .withColumn("seq_nr", F.col("data.seqNr"))
-        .select("*", F.posexplode("data.results").alias("result_position", "result"))
-        .withColumn("feed_id", F.col("result.feedId"))
-        .withColumn("req_weight", F.col("result.reqWeight"))
-        .withColumn("weight", F.col("result.weight"))
-        .withColumn("completed", F.col("result.completed"))
-        .drop("result", "result_position")
-    )
-
-
 def parse_load_done_result(df: DataFrame) -> DataFrame:
     return (
         df.filter(F.col("msg_type") == "LOAD_DONE")

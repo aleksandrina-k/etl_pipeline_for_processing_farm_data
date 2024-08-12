@@ -8,17 +8,6 @@ robot_config_schema = f"""
     relays_type STRING
 """
 
-load_done_schema = f"""
-    {BASE_COLUMNS},
-    ration_id INTEGER,
-    total_weight INTEGER,
-    feed_id INTEGER,
-    req_weight INTEGER,
-    weight INTEGER,
-    completed BOOLEAN,
-    seq_nr INTEGER
-"""
-
 load_done_result_schema = f"""
     {BASE_COLUMNS},
     ration_id INTEGER,
