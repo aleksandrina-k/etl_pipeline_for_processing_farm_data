@@ -38,7 +38,7 @@ class CreateDashboards(Job):
         app.layout = html.Div(
             [
                 html.H1(
-                    "Farm robots and feeds Dashboards",
+                    "Automated feeding system Dashboards",
                     style={"text-align": "center"},
                 ),
                 generate_date_picker_range_component(DATE_PICKER_ID),

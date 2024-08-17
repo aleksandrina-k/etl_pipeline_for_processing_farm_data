@@ -35,7 +35,7 @@ class Job(ABC):
         if not spark:
             builder = (
                 SparkSession.builder.master("local[*]")
-                .appName("Diplomna")
+                .appName("ETL_Pipeline")
                 .config("spark.jars.packages", "io.delta:delta-core_2.12:2.4.0")
                 .config(
                     "spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension"

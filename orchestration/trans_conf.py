@@ -121,21 +121,6 @@ class TransConf:
         )
         result_df.sort("farm_license").limit(10).show(truncate=False)
 
-        # (
-        #     result_df.sort("farm_license", "date")
-        #         .write.format("csv")
-        #         .mode("overwrite")
-        #         .save(f"{result_dir_location}/csv_gold/{self.result_table}")
-        # )
-        # from pyspark.sql import functions as F
-        # duplicate_count = result_df.groupBy("farm_license", "date", "feed_id").count().where(
-        # F.col("count") > 1
-        # ).count()
-        # print(duplicate_count)
-        # duplicate_count = result_df.groupBy("farm_license", "date", "feed_id").count().where(
-        #     F.col("count") == 2).count()
-        # print(duplicate_count)
-
         end_time = time.time()
         time_diff = round((end_time - start_time) / 60, 2)
         self.logger.info(
