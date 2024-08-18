@@ -18,6 +18,7 @@ class TestGoldData(Job):
             ).count()
 
             assert gold_table_count > 1, f"Table {table_name} should have some entries"
+        self.logger.info("All gold tables have entries.")
 
     def test_daily_facts_have_one_record_per_day(self, config):
         # table: entity columns
@@ -47,6 +48,7 @@ class TestGoldData(Job):
             assert (
                 missing_days_count == 0
             ), f"Table {table_name} has {missing_days_count} missing days."
+        self.logger.info("None of the gold daily tables have missing days.")
 
     def launch(self):
         self.logger.info("Starting Test Gold Data Job")

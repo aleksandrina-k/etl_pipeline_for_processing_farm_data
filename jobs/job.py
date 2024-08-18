@@ -77,31 +77,9 @@ class Job(ABC):
         f.close()
         return raw_content
 
-    @staticmethod
-    def _update_spark_log_level(log_level="info"):
-        levels_dict = {
-            "info": logging.INFO,
-            "warn": logging.WARNING,
-            "error": logging.ERROR,
-        }
-        """
-        Update the spark log level
-
-        :param log_level: Log level
-        """
-        logging.getLogger("py4j").setLevel(levels_dict.get(log_level, "info"))
-
     def _prepare_logger(self) -> logging.Logger:
-        # All messages go to spark log4j logger
-        # log4j_logger = self.spark._jvm.org.apache.log4j  # noqa
-        # return log4j_logger.LogManager.getLogger(self.__class__.__name__)
-
         # Set custom logger level
-        self._update_spark_log_level("warn")
-        # Use standard Python logger
-        # Remove basic config, as some modules can set it, making setting it again it impossible
-        for handler in logging.root.handlers[:]:
-            logging.root.removeHandler(handler)
+        logging.getLogger("py4j").setLevel(logging.WARNING)
 
         logging.basicConfig(
             format="%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
@@ -109,14 +87,7 @@ class Job(ABC):
             level=logging.INFO,
         )
 
-        # Disable Azure HTTP Logging
-        azure_logger = logging.getLogger(
-            "azure.core.pipeline.policies.http_logging_policy"
-        )
-        azure_logger.setLevel(logging.WARNING)
-
-        logger = logging.getLogger("CustomLogger")
-        return logger
+        return logging.getLogger("CustomLogger")
 
     def _log_conf(self):
         # log parameters
