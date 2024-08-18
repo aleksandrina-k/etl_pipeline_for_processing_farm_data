@@ -33,7 +33,9 @@ class CreateDashboards(Job):
 
     def launch(self):
         self.logger.info("Starting CreateDashboards Job")
-        farm_list = extract_all_farm_licenses(self.config.get_farm_table_location())
+        farm_list = extract_all_farm_licenses(
+            self.config.get_silver_table_location("silver_robot_config_dim")
+        )
         app = Dash(__name__, suppress_callback_exceptions=True)
         app.layout = html.Div(
             [

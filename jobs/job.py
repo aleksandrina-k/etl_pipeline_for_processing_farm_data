@@ -107,7 +107,6 @@ class Job(ABC):
             self.get_parameter("bronze_dir_name"),
             self.get_parameter("silver_dir_name"),
             self.get_parameter("gold_dir_name"),
-            self.get_parameter("farm_table_name"),
             self.get_parameter("bronze_table_name"),
             self.get_parameter("warehouse_folder_name"),
         )

@@ -233,15 +233,15 @@ def perform_transformation(
                 conf.optimize_result_table(spark, result_dir_location)
 
 
-def extract_all_farm_licenses(farm_table_location: str) -> list:
+def extract_all_farm_licenses(table_location: str) -> list:
     """
-    :param farm_table_location: farm table location in the file system
+    :param table_location: farm table location in the file system
     :return: Sorted list of all farm licenses
     """
     spark = SparkSession.builder.getOrCreate()
     farms = [
         x[0]
-        for x in spark.read.load(farm_table_location)
+        for x in spark.read.load(table_location)
         .groupBy("farm_license")
         .count()
         .select("farm_license")

@@ -7,7 +7,7 @@ from jobs.test_gold_data import TestGoldData
 
 if __name__ == "__main__":
 
-    config_file_path = r"conf/load_data_from_warehouse.json"
+    config_file_path = r"conf/all_tasks_conf_info.json"
 
     task1 = LoadDataFromWarehouse(config_file_path)
     task2 = ProcessBronzeToSilver0(config_file_path)
