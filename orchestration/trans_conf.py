@@ -25,6 +25,12 @@ class TransConf:
                 name that correspond to some table
     """
 
+    DEFAULT_MATCH_COLUMNS = {
+        "farm_license",
+        "device_type",
+        "device_number",
+        "time",
+    }
     DEFAULT_PARTITION_COLUMNS = {"year_month"}
 
     def __init__(
@@ -32,8 +38,7 @@ class TransConf:
         result_table: str,
         transformer: Callable,
         schema_str: str,
-        is_incremental: bool = False,
-        enable_change_data_feed=False,
+        match_columns: Set[str] = None,
         partition_columns: Set[str] = None,
     ):
         """
@@ -44,7 +49,8 @@ class TransConf:
                 table from input tables. Every parameter must be DataFrame and have
                 name that correspond to some table
             schema_str (str): resulting table schema
-            enable_change_data_feed (bool): enable change data feed on the table
+            match_columns (Set[str]): fields that are used on merge stage to identify
+                same entries
             partition_columns (List[str]): list of columns for partition resulting table
         """
         self.result_table = result_table
@@ -52,11 +58,10 @@ class TransConf:
         self.input_tables = get_parameters_names(transformer)
         self.schema_str = schema_str
         self.schema = _parse_datatype_string(schema_str)
+        self.match_columns = match_columns or TransConf.DEFAULT_MATCH_COLUMNS
         self.partition_columns = (
             partition_columns or TransConf.DEFAULT_PARTITION_COLUMNS
         )
-        self.is_incremental = is_incremental
-        self.enable_change_data_feed = enable_change_data_feed
         self.logger = logging.getLogger("CustomLogger")
 
     def _load_data(self, spark: SparkSession, table_dict: Dict[str, str]) -> dict:

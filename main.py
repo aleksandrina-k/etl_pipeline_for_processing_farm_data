@@ -21,4 +21,4 @@ if __name__ == "__main__":
     task3.launch()
     task4.launch()
     task5.launch()
-    # task6.launch()
+    task6.launch()

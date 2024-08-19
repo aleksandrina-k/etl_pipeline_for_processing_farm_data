@@ -1,12 +1,12 @@
 import logging
 from os import path
 from pyspark.sql import SparkSession, DataFrame, functions as F
-from orchestration.parser_conf import ParserConf
+from orchestration.trans_conf import TransConf
 
 
 def process_bronze_to_msg_table(
     spark: SparkSession,
-    conf: ParserConf,
+    conf: TransConf,
     bronze_table_df: DataFrame,
     result_dir_location: str,
 ):
@@ -14,7 +14,7 @@ def process_bronze_to_msg_table(
     logger.info(f"Starting to process {conf.result_table}")
     result_table_location = path.join(result_dir_location, conf.result_table)
 
-    silver_df = conf.parser(bronze_table_df).withColumn(
+    silver_df = conf.transformer(bronze_table_df).withColumn(
         "year_month", F.date_format(F.col("time"), "yyyy-MM")
     )
     silver_df_deduplicated = silver_df.dropDuplicates(list(conf.match_columns))

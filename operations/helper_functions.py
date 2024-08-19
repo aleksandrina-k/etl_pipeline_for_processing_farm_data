@@ -3,8 +3,6 @@ from typing import Set, List
 from pyspark.sql import SparkSession, DataFrame, functions as F, Window
 from delta.tables import DeltaTable
 from pyspark.sql.types import StructType, StructField, DateType
-
-from orchestration.trans_conf import TransConf
 from orchestration.trans_mapping import TransMapping
 
 max_datetime = datetime(2099, 12, 31, 23, 59, 59)
@@ -222,13 +220,11 @@ def perform_transformation(
     result_dir_location: str,
 ):
     for conf in mapping.transformations_in_order():
-        transform: TransConf = conf
-        if not transform.is_incremental:
-            conf.perform_transformation(
-                spark=spark,
-                input_dir_name=input_dir_location,
-                result_dir_location=result_dir_location,
-            )
+        conf.perform_transformation(
+            spark=spark,
+            input_dir_name=input_dir_location,
+            result_dir_location=result_dir_location,
+        )
 
 
 def extract_all_farm_licenses(table_location: str) -> list:
