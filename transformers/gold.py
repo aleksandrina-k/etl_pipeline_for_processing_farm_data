@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F, Window
-from operations.helper_functions import create_dim_table, split_carryover_items_factory
+from helper_functions import create_dim_table, split_carryover_items_factory
 
 SECONDS_IN_HOUR = 3600
 GRAMS_IN_KILOGRAM = 1000

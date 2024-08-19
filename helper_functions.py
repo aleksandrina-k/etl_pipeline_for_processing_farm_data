@@ -3,7 +3,6 @@ from typing import Set, List
 from pyspark.sql import SparkSession, DataFrame, functions as F, Window
 from delta.tables import DeltaTable
 from pyspark.sql.types import StructType, StructField, DateType
-from orchestration.trans_mapping import TransMapping
 
 max_datetime = datetime(2099, 12, 31, 23, 59, 59)
 
@@ -211,20 +210,6 @@ def merge_table(
         .whenMatchedUpdateAll()
         .execute()
     )
-
-
-def perform_transformation(
-    spark: SparkSession,
-    mapping: TransMapping,
-    input_dir_location: str,
-    result_dir_location: str,
-):
-    for conf in mapping.transformations_in_order():
-        conf.perform_transformation(
-            spark=spark,
-            input_dir_name=input_dir_location,
-            result_dir_location=result_dir_location,
-        )
 
 
 def extract_all_farm_licenses(table_location: str) -> list:

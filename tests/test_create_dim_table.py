@@ -1,6 +1,6 @@
 from pyspark.sql import functions as F
 from chispa import assert_df_equality
-from operations.helper_functions import create_dim_table, max_datetime
+from helper_functions import create_dim_table, max_datetime
 
 
 def test_create_dim_table(spark):

@@ -1,5 +1,5 @@
 from jobs.job import Job
-from operations.silver1_layer import process_silver0_to_silver1
+from layer_mappings.silver1_mapping import silver1_mapping
 
 
 class ProcessSilver0ToSilver1(Job):
@@ -10,4 +10,10 @@ class ProcessSilver0ToSilver1(Job):
         self.logger.info("Starting Process Silver0 To Silver1 Job")
         config = self.common_initialization()
 
-        process_silver0_to_silver1(self.spark, config)
+        mapping = silver1_mapping()
+        for conf in mapping.transformations_in_order():
+            conf.perform_transformation(
+                spark=self.spark,
+                input_dir_name=config.silver_dir_location,
+                result_dir_location=config.silver_dir_location,
+            )

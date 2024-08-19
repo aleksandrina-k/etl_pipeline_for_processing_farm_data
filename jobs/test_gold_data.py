@@ -2,7 +2,7 @@ from conf.pipeline_config import PipelineConfig
 from pyspark.sql import functions as F
 from jobs.job import Job
 from layer_mappings.gold_mapping import gold_mapping
-from operations.helper_functions import generate_calendar_table
+from helper_functions import generate_calendar_table
 
 
 class TestGoldData(Job):

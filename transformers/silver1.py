@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
-from operations.helper_functions import uuid_udf, create_dim_table
+from helper_functions import uuid_udf, create_dim_table
 
 
 def silver_loading_activity_transformer(
