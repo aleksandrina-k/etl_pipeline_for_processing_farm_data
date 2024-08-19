@@ -3,13 +3,13 @@ from helper_functions import uuid_udf, create_dim_table
 
 
 def silver_loading_activity_transformer(
-    load_start: DataFrame, load_done_result: DataFrame
+    load_start: DataFrame, load_done: DataFrame
 ) -> DataFrame:
     """
     The function combines the load_start and load_done messages into load activities.
     Args:
         load_start: The load_start messages
-        load_done_result: The load_done_results
+        load_done: The load_done
     Returns:
         A DataFrame with loading activities with start and end time and a uuid in
         loading_uuid
@@ -45,7 +45,7 @@ def silver_loading_activity_transformer(
     )
 
     end_for_join = (
-        load_done_result.select(
+        load_done.select(
             "farm_license",
             "device_number",
             "time",

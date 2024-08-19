@@ -1,5 +1,5 @@
 from pyspark.sql import functions as F
-from transformers.parsers import parse_load_done, parse_load_done_result
+from transformers.parsers import parse_load_done
 from ..conftest import spark  # noqa: F401, F403
 
 
@@ -35,7 +35,7 @@ def test_parse_load_done(spark):  # noqa: F811
     ), 2
 
 
-def test_parse_load_done_result(spark):  # noqa: F811
+def test_parse_load_done(spark):  # noqa: F811
 
     # Create sample DataFrame
     data = [
@@ -50,7 +50,7 @@ def test_parse_load_done_result(spark):  # noqa: F811
     df = spark.createDataFrame(data, ["msg_type", "data"])
 
     # Call the function
-    result_df = parse_load_done_result(df)
+    result_df = parse_load_done(df)
 
     # Assertions
     assert result_df.count() == 1

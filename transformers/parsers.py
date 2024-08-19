@@ -35,7 +35,7 @@ def parse_load_start(df: DataFrame) -> DataFrame:
 
 
 # LOAD_DONE:
-def parse_load_done_result(df: DataFrame) -> DataFrame:
+def parse_load_done(df: DataFrame) -> DataFrame:
     return (
         df.filter(F.col("msg_type") == "LOAD_DONE")
         .withColumn(

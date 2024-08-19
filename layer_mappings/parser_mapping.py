@@ -4,12 +4,12 @@ from schemas.silver0 import (
     load_start_schema,
     ration_names_schema,
     kitchen_feed_names_schema,
-    load_done_result_schema,
+    load_done_schema,
 )
 from transformers.parsers import (
     parse_robot_config,
     parse_load_start,
-    parse_load_done_result,
+    parse_load_done,
     parse_kitchen_feed_names,
     parse_ration_names,
 )
@@ -35,9 +35,9 @@ def parser_mapping():
         ],
         "LOAD_DONE": [
             TransConf(
-                result_table="load_done_result",
-                transformer=parse_load_done_result,
-                schema_str=load_done_result_schema,
+                result_table="load_done",
+                transformer=parse_load_done,
+                schema_str=load_done_schema,
                 match_columns=TransConf.DEFAULT_MATCH_COLUMNS | {"ration_id", "seq_nr"},
             ),
         ],
