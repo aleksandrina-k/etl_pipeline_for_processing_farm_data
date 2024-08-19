@@ -13,7 +13,6 @@ from transformers.gold import (
 )
 
 DEFAULT_PARTITION_COLUMNS_GOLD = {"farm_license"}
-DEFAULT_ZORDER_COLUMNS_GOLD = {"date"}
 
 
 def gold_mapping():
@@ -25,21 +24,18 @@ def gold_mapping():
                 transformer=feed_daily_fact_transformer,
                 schema_str=feed_daily_fact_schema,
                 partition_columns=DEFAULT_PARTITION_COLUMNS_GOLD,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD,
             ),
             TransConf(
                 result_table="ration_daily_fact",
                 transformer=ration_daily_fact_transformer,
                 schema_str=ration_daily_fact_schema,
                 partition_columns=DEFAULT_PARTITION_COLUMNS_GOLD,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD,
             ),
             TransConf(
                 result_table="farm_daily_fact",
                 transformer=farm_daily_fact_transformer,
                 schema_str=farm_daily_fact_schema,
                 partition_columns=DEFAULT_PARTITION_COLUMNS_GOLD,
-                zorder_columns=DEFAULT_ZORDER_COLUMNS_GOLD,
             ),
         ],
         existing_tables=silver1_mapping().get_all_tables(),

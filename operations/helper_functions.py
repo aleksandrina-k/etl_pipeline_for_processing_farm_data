@@ -229,8 +229,6 @@ def perform_transformation(
                 input_dir_name=input_dir_location,
                 result_dir_location=result_dir_location,
             )
-            if conf.zorder_columns:
-                conf.optimize_result_table(spark, result_dir_location)
 
 
 def extract_all_farm_licenses(table_location: str) -> list:

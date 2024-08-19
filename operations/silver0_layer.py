@@ -28,5 +28,3 @@ def process_bronze_to_msg_table(
 
     df = spark.read.load(result_table_location)
     df.sort("farm_license", "time").limit(10).show(truncate=False)
-
-    conf.optimize_result_table(spark, result_dir_location)
