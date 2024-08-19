@@ -1,6 +1,4 @@
-from layer_mappings.parser_mapping import parser_mapping
 from orchestration.trans_conf import TransConf
-from orchestration.trans_mapping import TransMapping
 from schemas.silver1 import (
     silver_loading_activity_schema,
     silver_robot_config_dim_schema,
@@ -17,31 +15,25 @@ from transformers.silver1 import (
 
 def silver1_mapping():
     """Settings for creating silver1_layer table"""
-    existing_tables = {
-        conf.result_table for confs in parser_mapping().values() for conf in confs
-    }
-    return TransMapping(
-        confs=[
-            TransConf(
-                result_table="silver_loading_activity",
-                transformer=silver_loading_activity_transformer,
-                schema_str=silver_loading_activity_schema,
-            ),
-            TransConf(
-                result_table="silver_robot_config_dim",
-                transformer=silver_robot_config_dim_transformer,
-                schema_str=silver_robot_config_dim_schema,
-            ),
-            TransConf(
-                result_table="silver_kitchen_feed_names_dim",
-                transformer=silver_kitchen_feed_names_dim_transformer,
-                schema_str=silver_kitchen_feed_names_dim_schema,
-            ),
-            TransConf(
-                result_table="silver_ration_names_dim",
-                transformer=silver_ration_names_dim_transformer,
-                schema_str=silver_ration_names_dim_schema,
-            ),
-        ],
-        existing_tables=existing_tables,
-    )
+    return [
+        TransConf(
+            result_table="silver_loading_activity",
+            transformer=silver_loading_activity_transformer,
+            schema_str=silver_loading_activity_schema,
+        ),
+        TransConf(
+            result_table="silver_robot_config_dim",
+            transformer=silver_robot_config_dim_transformer,
+            schema_str=silver_robot_config_dim_schema,
+        ),
+        TransConf(
+            result_table="silver_kitchen_feed_names_dim",
+            transformer=silver_kitchen_feed_names_dim_transformer,
+            schema_str=silver_kitchen_feed_names_dim_schema,
+        ),
+        TransConf(
+            result_table="silver_ration_names_dim",
+            transformer=silver_ration_names_dim_transformer,
+            schema_str=silver_ration_names_dim_schema,
+        ),
+    ]

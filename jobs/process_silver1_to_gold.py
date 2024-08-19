@@ -10,8 +10,7 @@ class ProcessSilver1ToGold(Job):
         self.logger.info("Starting Process Silver1 To Gold Job")
         config = self.common_initialization()
 
-        mapping = gold_mapping()
-        for conf in mapping.transformations_in_order():
+        for conf in gold_mapping():
             conf.perform_transformation(
                 spark=self.spark,
                 input_dir_name=config.silver_dir_location,

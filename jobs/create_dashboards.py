@@ -23,7 +23,7 @@ from dash_items.component_ids import (
     RATION_CONTAINER_ID,
     RATION_MAPPER_ID,
 )
-from helper_functions import extract_all_farm_licenses
+from operations.helper_functions import extract_all_farm_licenses
 
 
 class CreateDashboards(Job):

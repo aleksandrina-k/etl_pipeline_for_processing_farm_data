@@ -2,7 +2,7 @@ from conf.pipeline_config import PipelineConfig
 from pyspark.sql import functions as F
 from jobs.job import Job
 from layer_mappings.gold_mapping import gold_mapping
-from helper_functions import generate_calendar_table
+from operations.helper_functions import generate_calendar_table
 
 
 class TestGoldData(Job):
@@ -10,8 +10,7 @@ class TestGoldData(Job):
         Job.__init__(self, config_file_path, spark)
 
     def test_all_gold_tables_not_empty(self, config: PipelineConfig):
-        mapping = gold_mapping()
-        for conf in mapping.transformations_in_order():
+        for conf in gold_mapping():
             table_name = conf.result_table
             gold_table_count = self.spark.read.load(
                 f"{config.gold_dir_location}\\{table_name}"
