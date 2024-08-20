@@ -15,7 +15,7 @@ from transformers.parsers import (
 )
 
 
-def parser_mapping():
+def silver0_mapping():
     """Settings for creating silver_layer table of certain message type"""
     return {
         "ROBOT_CONFIG": [

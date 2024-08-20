@@ -1,6 +1,6 @@
 from jobs.job import Job
 from os import path
-from layer_mappings.parser_mapping import parser_mapping
+from layer_mappings.silver0_mapping import silver0_mapping
 from pyspark.sql import functions as F, DataFrame
 
 from orchestration.trans_conf import TransConf
@@ -18,7 +18,7 @@ class ProcessBronzeToSilver0(Job):
         bronze_data_df = self.spark.read.load(config.get_bronze_table_location())
         bronze_data_df.cache()
 
-        mapping = parser_mapping()
+        mapping = silver0_mapping()
         for msg_type, confs in mapping.items():
             for conf in confs:
                 self.process_bronze_to_msg_table(
