@@ -1,10 +1,3 @@
-farm_info_schema_str = """
-    farm_license STRING,
-    country STRING,
-    city STRING,
-    creation_timestamp TIMESTAMP
-"""
-
 bronze_table_str = """
     farm_license STRING,
     device_type STRING,
