@@ -31,6 +31,7 @@ ration_names_schema = T.StructType(
         )
     ]
 )
+
 robot_config_schema = T.StructType(
     [
         T.StructField("phases", T.StringType(), False),
@@ -39,6 +40,7 @@ robot_config_schema = T.StructType(
         T.StructField("relaysType", T.StringType(), False),
     ]
 )
+
 load_done_schema = T.StructType(
     [
         T.StructField("rationId", T.IntegerType(), False),
@@ -59,6 +61,7 @@ load_done_schema = T.StructType(
         T.StructField("seqNr", T.IntegerType(), False),
     ]
 )
+
 load_start_schema = T.StructType(
     [
         T.StructField("rationId", T.IntegerType(), False),
