@@ -1,7 +1,12 @@
 from pyspark.sql import functions as F
 from pyspark.sql import DataFrame
-from schemas.robot import robot_config_schema, load_start_schema, load_done_schema
-from schemas.farm_pc import kitchen_feed_names_schema, ration_names_schema
+from schemas.structured import (
+    kitchen_feed_names_schema,
+    ration_names_schema,
+    robot_config_schema,
+    load_done_schema,
+    load_start_schema,
+)
 
 
 # ROBOT CONFIG
