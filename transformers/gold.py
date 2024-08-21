@@ -99,8 +99,8 @@ def feed_daily_fact_transformer(
                 )
             ).alias("loading_accuracy_perc"),
         )
-        .where((F.col("requested_weight_kg") / F.col("nr_times_loaded")) < 1500)
-        .where(F.col("avg_loading_deviation_kg") < 11000)
+        # .where((F.col("requested_weight_kg") / F.col("nr_times_loaded")) < 1500)
+        # .where(F.col("avg_loading_deviation_kg") < 11000)
     )
 
     with_kitchen_names = (

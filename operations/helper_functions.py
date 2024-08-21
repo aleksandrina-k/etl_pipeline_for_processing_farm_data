@@ -1,7 +1,6 @@
 from datetime import datetime, date, timedelta
-from typing import Set, List
+from typing import List
 from pyspark.sql import SparkSession, DataFrame, functions as F, Window
-from delta.tables import DeltaTable
 from pyspark.sql.types import StructType, StructField, DateType
 
 max_datetime = datetime(2099, 12, 31, 23, 59, 59)
@@ -33,7 +32,6 @@ def create_dim_table(
     orderby_col: str = "time",
 ):
     """
-    TODO: change docstring
     Usage: the current silver tables have time periods for which all
     the settings are valid. As soon as 1 of the settings changes a new
     time period is started. However, sometimes we are not interested in
@@ -174,42 +172,6 @@ def split_carryover_items_factory(
         return output
 
     return inner
-
-
-def merge_table(
-    spark: SparkSession,
-    df: DataFrame,
-    table_location: str,
-    match_columns: Set[str],
-):
-    """
-    Merge data into target table removing duplicates.
-    Args:
-        spark: Spark session
-        df: data to merge
-        table_location: Target table location
-        match_columns: Columns used to deduplicate data.
-            Combination of value in this columns must be unique.
-    """
-    on_condition = " AND ".join(
-        f"new_df.{col_name} = t_current.{col_name}" for col_name in match_columns
-    )
-
-    # The dataset containing the new logs needs to be deduplicated within itself.
-    # By the SQL semantics of merge, it matches and de-duplicates the new data with
-    # the existing data in the table, but if there is duplicate data within
-    # the new dataset, it is inserted. Hence, deduplicate the new data before
-    # merging into the table.
-    # Source: https://docs.databricks.com/delta/delta-update.html#data-deduplication-when-writing-into-delta-tables # noqa: E501
-    table = DeltaTable.forPath(spark, table_location)
-    # table = spark.read.load(table_name)
-    (
-        table.alias("t_current")
-        .merge(df.dropDuplicates(list(match_columns)).alias("new_df"), on_condition)
-        .whenNotMatchedInsertAll()
-        .whenMatchedUpdateAll()
-        .execute()
-    )
 
 
 def extract_all_farm_licenses(table_location: str) -> list:

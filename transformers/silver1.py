@@ -60,11 +60,10 @@ def silver_loading_activity_transformer(
 
     loading_activity = (
         start_for_join.alias("start")
-        .withWatermark("start_time", "12 HOURS")
         .join(
-            end_for_join.alias("end").withWatermark("end_time", "12 HOURS"),
+            end_for_join.alias("end"),
             on=join_condition,
-            how="left",
+            how="inner",
         )
         .select(
             "start.farm_license",
