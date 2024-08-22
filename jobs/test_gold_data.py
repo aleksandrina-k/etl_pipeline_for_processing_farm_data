@@ -19,17 +19,12 @@ class TestGoldData(Job):
             assert gold_table_count > 1, f"Table {table_name} should have some entries"
         self.logger.info("All gold tables have entries.")
 
-    def test_daily_facts_have_one_record_per_day(self, config):
-        # table: entity columns
-        daily_facts = {
-            "feed_daily_fact": ["farm_license", "feed_id"],
-            "ration_daily_fact": ["farm_license", "ration_id"],
-            "farm_daily_fact": ["farm_license"],
-        }
+    def test_daily_facts_do_not_have_missing_days(self, config):
 
         calendar_df = generate_calendar_table()
 
-        for table_name, entity_columns in daily_facts.items():
+        for conf in gold_mapping():
+            table_name = conf.result_table
             daily_table = self.spark.read.load(
                 f"{config.gold_dir_location}\\{table_name}"
             )
@@ -54,4 +49,4 @@ class TestGoldData(Job):
         config = self.common_initialization()
 
         self.test_all_gold_tables_not_empty(config)
-        self.test_daily_facts_have_one_record_per_day(config)
+        self.test_daily_facts_do_not_have_missing_days(config)

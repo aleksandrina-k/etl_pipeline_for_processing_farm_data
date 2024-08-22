@@ -19,7 +19,7 @@ def test_parse_robot_config(spark):  # noqa: F811
 
     # Assertions
     assert result_df.count() == 1
-    assert result_df.filter(F.col("msg_type") == "ROBOT_CONFIG").count() == 1
+    assert result_df.filter(F.col("msg_type") != "ROBOT_CONFIG").count() == 0
     assert (
         result_df.filter(F.col("msg_type") == "ROBOT_CONFIG")
         .select("phases", "freq_type_mixer", "freq_type_roller", "relays_type")

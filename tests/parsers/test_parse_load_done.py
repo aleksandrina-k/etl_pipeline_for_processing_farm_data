@@ -20,7 +20,7 @@ def test_parse_load_done(spark):  # noqa: F811
 
     # Assertions
     assert result_df.count() == 2
-    assert result_df.filter(F.col("msg_type") == "LOAD_DONE").count() == 2
+    assert result_df.filter(F.col("msg_type") != "LOAD_DONE").count() == 0
     assert (
         result_df.filter(F.col("msg_type") == "LOAD_DONE")
         .select("ration_id", "total_weight", "seq_nr")

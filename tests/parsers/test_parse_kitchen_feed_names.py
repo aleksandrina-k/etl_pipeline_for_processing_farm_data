@@ -3,7 +3,7 @@ from transformers.parsers import parse_kitchen_feed_names
 from ..conftest import spark  # noqa: F401, F403
 
 
-def test_kitchen_feed_names(spark):  # noqa: F811
+def test_parse_kitchen_feed_names(spark):  # noqa: F811
     # Create sample DataFrame with nested array
     data = [
         (
@@ -19,7 +19,7 @@ def test_kitchen_feed_names(spark):  # noqa: F811
 
     # Assertions
     assert result_df.count() == 2
-    assert result_df.filter(F.col("msg_type") == "KITCHEN_FEED_NAMES").count() == 2
+    assert result_df.filter(F.col("msg_type") != "KITCHEN_FEED_NAMES").count() == 0
     assert (
         result_df.filter(F.col("msg_type") == "KITCHEN_FEED_NAMES")
         .select("feed_id", "name")
